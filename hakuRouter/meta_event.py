@@ -1,11 +1,11 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import os
+pluginModules = dict()
 
-print(__file__)
+def new_event(msgDict):
+    print('call meta event')
 
-print('new')
-
-def main():
-    print('get main')
+def link_modules(plgs):
+    global pluginModules
+    pluginModules = plgs
