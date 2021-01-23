@@ -2,14 +2,17 @@
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
 import time, importlib
+import logging
 
 pluginModules = dict()
+myLogger = logging.getLogger('hakuBot')
 
 def no_such_module(msgDict):
-    print('no such module: {}', msgDict[post_type])
+    global myLogger
+    myLogger.warning('No such router: {}'.format(msgDict['post_type']))
 
 def new_event(msgDict):
-    global pluginModules
+    global pluginModules, myLogger
     msgType = msgDict.get('post_type', 'NULL')
     if msgType == 'NULL': return
     mdl = 'hakuRouter.{}'.format(msgType)
@@ -18,23 +21,18 @@ def new_event(msgDict):
         try:
             imp = importlib.import_module('hakuRouter.{}'.format(msgType))
             imp.link_modules(pluginModules)
-        except Exception as e:
-            print(e)
+        except ModuleNotFoundError:
             no_such_module(msgDict)
+        except:
+            myLogger.exception('RuntimeError')
         else:
             pluginModules[msgType] = imp
     try:
         imp.new_event(msgDict)
-    except Exception as e :
-        print(e)
+    except:
+        myLogger.exception('RuntimeError')
 
 def link_modules(plgs):
     global pluginModules
     pluginModules = plgs
 
-    failedList = []
-    print('update plugins')
-
-    #for md in failedList:
-        #modules.
-        

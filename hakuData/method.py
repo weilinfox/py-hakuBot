@@ -2,8 +2,9 @@
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
 import os
+import hakuData.log
 
-# check files
+# 路径检测和初始化
 dataPath = os.path.normpath(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) + '/files'
 dataPath = os.path.normpath(dataPath)
 csvPath = dataPath + '/csv'
@@ -43,7 +44,9 @@ if not os.path.exists(configFile) or not os.path.isfile(configFile):
         "post_url": "127.0.0.1:8001",
         "access_token": "",
         "threads": false,
-        "processes": 1
+        "processes": 1,
+        "log_level": "INFO",
+        "console_log_level": "INFO"
     },
     "haku_config":{
         "admin_qq": -1,
@@ -56,6 +59,7 @@ if not os.path.exists(configFile) or not os.path.isfile(configFile):
         )
     config.close()
 
+# 获取各目录配置文件
 def get_filenames():
     global csvFiles, sqliteFiles, jsonFiles
     f = os.walk(csvPath)
@@ -65,24 +69,26 @@ def get_filenames():
     f = os.walk(jsonPath)
     jsonFiles = set(next(f)[2])
 
+# config.json路径
 def get_config_json():
     return dataPath + '/config.json'
 
+# 插件配置路径
 def get_plugin_config_json(fileName):
     global jsonPath, jsonFiles
-    if fileName in jsonFiles:
-        return "{}/{}".format(jsonPath, fileName)
-    else:
-        conf = open("{}/{}".format(jsonPath, fileName), "w")
+    filePath = "{}/{}".format(jsonPath, fileName)
+    if not fileName in jsonFiles:
+        conf = open(filePath, "w")
         conf.write(
 '''
 {}
 '''
             )
         conf.close()
-        return "{}/{}".format(jsonPath, fileName)
+    return filePath
 
 get_filenames()
+hakuData.log.init_log_path(logPath)
 
 if __name__ == '__main__':
     print('csvFiles {}'.format(csvFiles))

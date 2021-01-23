@@ -2,13 +2,17 @@
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
 import flask
-import time, json, importlib, threading
+import time, json, importlib, threading, os
+import logging, logging.config
+import hakuData.log as hakuLog
 import hakuData.method as dataMethod
 import hakuCore.hakuMind as callHaku
 
-modules = {'dataMethod', 'callHaku'}
+# 模块记录 用于reload
+modules = ('hakuLog', 'dataMethod', 'callHaku')
 pluginDict = dict()
 
+# 读取配置
 configFile = open(dataMethod.get_config_json(), "r")
 configDict = json.loads(configFile.read())
 configFile.close()
@@ -19,15 +23,29 @@ HOST = serverConfig.get('listen_host', '127.0.0.1')
 PORT = serverConfig.get('listen_port', 8000)
 THREAD = serverConfig.get('threads', False)
 PROCESS = serverConfig.get('processes', 1)
+LOGLEVEL = serverConfig.get('log_level', 'INFO')
+CLOGLEVEL = serverConfig.get('console_log_level', 'INFO')
 FLASKDEBUG = False
 
-app = flask.Flask(__name__)
+# 初始化log
+hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
+logging.config.dictConfig(hakuLog.logDict)
+myLogger = logging.getLogger('hakuBot')
+myLogger.info('logger init finished.')
+
+# 线程控制
+flaskApp = flask.Flask(__name__)
 updateLock = threading.Lock()
 threadLock = threading.Lock()
 threadDict = dict()
 threadCount = 0
 
+# 初始化hakuCore
+callHaku.link_modules(pluginDict)
+
+
 def clear_threadDict():
+    # 清理threadDict
     global threadDict
     popKeys = list()
     for thr in threadDict.keys():
@@ -38,6 +56,8 @@ def clear_threadDict():
 
 def new_thread(msgDict):
     global updateLock, threadLock, threadDict, threadCount, modules
+    # update期间不允许新事件
+    # 例行清理
     if updateLock.locked():
         threadCount -= 1
         clear_threadDict()
@@ -45,58 +65,69 @@ def new_thread(msgDict):
             threadCount = 0
             threadLock.release()
         return
+    # 新事件 逻辑
     try:
         retCode = callHaku.new_event(msgDict)
-    except Exception as e:
-        print(e)
+    except:
+        myLogger.exception('RuntimeError')
+    # 线程记录和锁
     threadCount -= 1
     if (updateLock.locked() and threadCount <= 1) or threadCount < 1:
         if threadLock.locked():
-            print('release threadLock')
+            myLogger.debug('release threadLock')
             threadLock.release()
     clear_threadDict()
 
 def update_thread():
     global updateLock, threadCount, threadLock
-    if updateLock.locked(): return
+    # 同时只允许一个update线程
+    if updateLock.locked():
+        threadCount -= 1
+        return
+    # update锁 期间不允许更多线程进入
     with updateLock:
-        print('wait for threads')
-        if threadLock.locked() and threadCount == 1:
-            print('self release threadLock')
+        myLogger.debug('wait for threads')
+        # 防止死锁?
+        if threadCount == 1 and threadLock.locked():
             threadLock.release()
+            myLogger.debug('self release threadLock')
+        # update逻辑
         with threadLock:
-            print('start update process')
+            myLogger.debug('start update process')
+            # 重载主要模块
             for md in modules:
                 try:
                     importlib.reload(eval(md))
-                except Exception as e:
-                    print(e)
-
-    callHaku.link_modules(pluginDict)
-    for md in pluginDict.keys():
-        if 'quit_plugin' in dir(pluginDict[md]):
-            try:
-                eval(md + 'quit_plugin')()
-            except Exception as e:
-                print(e)
-        try:
-            pluginDict[md] = importlib.reload(pluginDict[md])
-        except Exception as e:
-            print(e)
-        else:
-            # 一级插件
-            if not '.' in md:
-                pluginDict[md].link_modules(pluginDict)
+                except:
+                    myLogger.exception('RuntimeError')
+            # 重新初始化module
+            callHaku.link_modules(pluginDict)
+            hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
+            # 重载插件
+            for md in pluginDict.keys():
+                if 'quit_plugin' in dir(pluginDict[md]):
+                    try:
+                        eval(md + 'quit_plugin')()
+                    except:
+                        myLogger.exception('RuntimeError')
+                try:
+                    pluginDict[md] = importlib.reload(pluginDict[md])
+                except:
+                    myLogger.exception('RuntimeError')
+                else:
+                    # 重新初始化一级插件
+                    if not '.' in md:
+                        pluginDict[md].link_modules(pluginDict)
     threadCount -= 1
 
-
-@app.route('/', methods=['POST'])
+# 事件触发
+@flaskApp.route('/', methods=['POST'])
 def newMsg():
     global threadDict, threadCount, threadLock
     try:
         msgDict = flask.request.get_json()
-    except Exception as e:
-        print(e)
+    except:
+        myLogger.exception('RuntimeError')
     else:
         if threadCount == 0: threadLock.acquire()
         threadCount += 1
@@ -105,7 +136,8 @@ def newMsg():
         newThread.start()
     return ''
 
-@app.route('/UPDATE', methods=['POST', 'GET'])
+# update触发
+@flaskApp.route('/UPDATE', methods=['POST', 'GET'])
 def updateMsg():
     global threadDict, threadCount
     threadCount += 1
@@ -114,5 +146,6 @@ def updateMsg():
     newThread.start()
     return ''
 
-callHaku.link_modules(pluginDict)
-app.run(host=HOST, port=PORT, debug=FLASKDEBUG, threaded=THREAD, processes=PROCESS)
+# 运行flask
+if __name__ == "__main__":
+    flaskApp.run(host=HOST, port=PORT, debug=FLASKDEBUG, threaded=THREAD, processes=PROCESS)
