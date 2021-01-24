@@ -25,6 +25,7 @@ def init_api_url(ptcl, url, token):
     uploadProtocol, uploadUrl, uploadToken = (ptcl, url, token)
 
 def send_cqhttp_request(path, params):
+    myLogger.info(f'Send message to {path} : {params}')
     # 如果需要token
     if uploadToken: params['access_token'] = uploadToken
     return requests.get(url=f'{uploadProtocol}://{uploadUrl}{path}',params=params)
@@ -53,7 +54,7 @@ def send_group_poke(gid, uid):
 
 # 发送群xml消息(hakuBot) (OneBot_v11_cq) 返回 message_id
 def send_group_xml(gid, xmlMsg):
-    # 此处添加html实体化处理逻辑
+    # 此处添加html实体化处理逻辑 [CQ:xml,data=<?xml ...]
     return 404, {}
 
 # 发送私聊xml消息(hakuBot) (OneBot_v11_cq) 返回 message_id
@@ -79,19 +80,19 @@ def send_group_tts(gid, msg):
 # shareUrl 分享链接, title 内容标题, content 内容描述, image 图片url
 def send_group_share_link(gid, shareUrl, title, content, image=''):
     if image:
-        return send_group_msg(gid, f'[CQ:share,url={shareUrl},title={title},content={musicId},image={image}]')
+        return send_group_msg(gid, f'[CQ:share,url={shareUrl},title={title},content={content},image={image}]')
     else:
-        return send_group_msg(gid, f'[CQ:share,url={shareUrl},title={title},content={musicId}')
+        return send_group_msg(gid, f'[CQ:share,url={shareUrl},title={title},content={content}')
 
 # 发送私聊链接分享(hakuBot) (OneBot_v11_cq) 返回 message_id
 def send_private_share_link(uid, shareUrl, title, content, image=''):
     if image:
-        return send_private_msg(uid, f'[CQ:share,url={shareUrl},title={title},content={musicId},image={image}]')
+        return send_private_msg(uid, f'[CQ:share,url={shareUrl},title={title},content={content},image={image}]')
     else:
-        return send_private_msg(uid, f'[CQ:share,url={shareUrl},title={title},content={musicId}]')
+        return send_private_msg(uid, f'[CQ:share,url={shareUrl},title={title},content={content}]')
 
 # 发送群音乐分享(hakuBot) (OneBot_v11_cq) 返回 message_id
-# music type 包括 qq QQ音乐, 163 网易云音乐, xm 虾米音乐
+# musicType 包括 qq QQ音乐, 163 网易云音乐, xm 虾米音乐
 def send_group_share_music(gid, musicType, musicId):
     if not (musicType in ['qq', '163', 'xm']):
         return 404, {}

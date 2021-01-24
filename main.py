@@ -7,12 +7,13 @@ import time, json, importlib, threading, os
 import logging, logging.config
 import hakuData.log as hakuLog
 import hakuData.method as dataMethod
+import hakuData.status as hakuStatus
 import hakuCore.hakuMind as callHaku
 import hakuCore.cqhttpApi as hakuApi
 import hakuCore.report
 
 # 模块记录 用于reload
-modules = ('hakuLog', 'dataMethod', 'callHaku', 'hakuApi', 'hakuCore.report')
+modules = ('hakuLog', 'hakuStatus', 'dataMethod', 'callHaku', 'hakuApi', 'hakuCore.report')
 pluginDict = dict()
 
 # 读取配置
@@ -130,12 +131,13 @@ def update_thread():
                     except:
                         myLogger.exception('RuntimeError')
                 try:
+                    myLogger.debug(f'Reload {md}')
                     pluginDict[md] = importlib.reload(pluginDict[md])
                 except:
                     myLogger.exception('RuntimeError')
                 else:
                     # 重新初始化一级插件
-                    if not '.' in md:
+                    if not ('.' in md):
                         pluginDict[md].link_modules(pluginDict)
     threadCount -= 1
 

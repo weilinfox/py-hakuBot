@@ -3,6 +3,7 @@
 
 import json, logging, threading, importlib
 import hakuData.method
+import hakuData.status
 import hakuCore.cqhttpApi as hakuApi
 
 configFile = open(hakuData.method.get_config_json(), "r")
@@ -20,8 +21,27 @@ pluginModules = dict()
 groupMsgCacheLock = threading.Lock()
 groupMsgCache = dict()
 
+# 消息统计
+msgTimeCache = list()
+msgTimeCacheLen = 0
+msgTimeCacheLock = threading.Lock()
+
+# 注册status
+hakuData.status.regest_router('message', {'message_frequency':0})
+
 def check_msg_cache(msgDict):
-    global groupMsgCache, groupMsgCacheLock
+    global groupMsgCache, groupMsgCacheLock, msgTimeCache, msgTimeCacheLen
+    with msgTimeCacheLock:
+        tm = msgDict['time']
+        delList = []
+        msgTimeCache.append(tm)
+        msgTimeCacheLen += 1
+        for t in msgTimeCache:
+            if tm - t >= 60: delList.append(t)
+        for t in delList:
+            msgTimeCache.remove(t)
+        msgTimeCacheLen -= len(delList)
+        hakuData.status.refresh_status('message', {'message_frequency':msgTimeCacheLen})
     if msgDict['message_type'] != 'group': return
     gid = msgDict['group_id']
     myLogger.debug('Insert message to group message cache.')
@@ -54,8 +74,8 @@ def check_msg_cache(msgDict):
 
 def new_event(msgDict):
     global pluginModules
-    myLogger.info(f'Get message: {msgDict}')
     check_msg_cache(msgDict)
+    myLogger.info(f'Current message frequency: {msgTimeCacheLen}/min\nGet message: {msgDict}')
     if msgDict['message'][0] == INDEX:
         modName = list(msgDict['message'][1:].split())[0]
         plgName = f'plugins.message.{modName}'
@@ -81,16 +101,6 @@ def new_event(msgDict):
                     hakuApi.reply_msg(msgDict, plgMsg)
             except:
                 myLogger.exception('RuntimeError')
-                
-    #print(hakuApi.reply_msg(msgDict, '诶嘿嘿hhh'))
-    #print(hakuApi.get_version_info())
-    #print(hakuApi.get_login_info())
-    #print(hakuApi.get_friend_list())
-    #print(hakuApi.get_group_list())
-    #print(hakuApi.get_status())
-    #print(hakuApi.send_poke(1146440669, 2521857263))
-    #if msgDict['message_type'] == 'group':
-    #    print(hakuApi.send_group_tts(msgDict['group_id'], msgDict['message']))
 
 def link_modules(plgs):
     global pluginModules

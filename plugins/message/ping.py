@@ -4,8 +4,10 @@
 import logging
 myLogger = logging.getLogger('hakuBot')
 
+myLogger.info('Load ping plugin.')
+
 def main(msgDict):
     return 'Pong!'
 
 def quit_plugin():
-    myLogger.info('Quit plugin.')
+    myLogger.info('Quit ping plugin.')
