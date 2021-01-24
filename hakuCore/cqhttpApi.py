@@ -2,12 +2,14 @@
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
 '''
-由于没有找到cqhttp的文档, 故实现了兼容cqhttp协议的OneBot的Api作为替代, 兼容一定标准的api在注释中已标明
-重点实现go-cqhttp的协议, 重复的api优先实现go-cqhttp的版本
-自定义api用(hakuBot)标明
+由于没有找到cqhttp的文档, 故实现了兼容cqhttp协议的OneBot的Api作为替代, 兼容一定标准的api在注释中已标明, 自定义api用(hakuBot)标明
+重点实现go-cqhttp的协议, 重复的api优先实现go-cqhttp的版本, 部分自定义api为cq码封装, 封装的cq码标准亦标出
 OneBot_v11 api依照这里 https://github.com/howmanybots/onebot/blob/master/v11/specs/api/public.md
 go-cqhttp api依照这里 https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md
 所有api都返回一个元祖 (<状态码>, <响应消息字典>)
+状态码40x代表http请求错误, 部分404码为进行操作前函数进行的操作合法性检查发现错误, 其他为cqhttp状态码, 列如下:
+0 成功, 1 进入异步执行而结果未知, 100 参数缺失或参数无效, 102 返回的数据无效(如没有权限), 103 操作失败(如没有权限),
+104 凭证失效而操作失败(可尝试清除缓存解决), 201 工作线程池未正确初始化而无法执行异步任务
 '''
 
 import requests, logging, json
@@ -25,7 +27,7 @@ def init_api_url(ptcl, url, token):
 def send_cqhttp_request(path, params):
     # 如果需要token
     if uploadToken: params['access_token'] = uploadToken
-    return requests.get(url='{}://{}{}'.format(uploadProtocol,uploadUrl,path),params=params)
+    return requests.get(url=f'{uploadProtocol}://{uploadUrl}{path}',params=params)
 
 def parse_cqhttp_resp(resp):
     if resp.status_code == 200:
@@ -45,9 +47,80 @@ def send_group_msg (gid, msg, auto_escape = False):
     resp = send_cqhttp_request('/send_group_msg', {'group_id':gid, 'message':msg, 'auto_escape':auto_escape})
     return parse_cqhttp_resp(resp)
 
-# 发送戳一戳(hakuBot) 只兼容go-cqhttp 返回为0的message_id
-def send_poke(gid, uid):
-    return send_group_msg('/send_group_msg', {'group_id':gid, 'message':'[CQ:poke,qq={}]'.format(uid)})
+# 发送戳一戳(hakuBot) (go-cqhttp_cq) 返回 message_id 返回为0的message_id
+def send_group_poke(gid, uid):
+    return send_group_msg('/send_group_msg', {'group_id':gid, 'message':f'[CQ:poke,qq={uid}]'})
+
+# 发送群xml消息(hakuBot) (OneBot_v11_cq) 返回 message_id
+def send_group_xml(gid, xmlMsg):
+    # 此处添加html实体化处理逻辑
+    return 404, {}
+
+# 发送私聊xml消息(hakuBot) (OneBot_v11_cq) 返回 message_id
+def send_private_xml(uid, xmlMsg):
+    # 此处添加html实体化处理逻辑
+    return 404, {}
+
+# 发送群json消息(hakuBot) (OneBot_v11_cq) 返回 message_id
+def send_group_json(gid, jsonMsg):
+    jsonMsg = jsonMsg.replace(',', '&#44;').replace('&', '&amp;').replace('[', '&#91;').replace(']', '&#93;')
+    return send_group_msg(gid, f'[CQ:json,data={jsonMsg}]')
+
+# 发送私聊json消息(hakuBot) (OneBot_v11_cq) 返回 message_id
+def send_private_json(uid, jsonMsg):
+    jsonMsg = jsonMsg.replace(',', '&#44;').replace('&', '&amp;').replace('[', '&#91;').replace(']', '&#93;')
+    return send_private_msg(uid, f'[CQ:json,data={jsonMsg}]')
+
+# 发送群tts消息(hakuBot) (go-cqhttp_cq) 返回 message_id
+def send_group_tts(gid, msg):
+    return send_group_msg(gid, f'[CQ:tts,text={msg}]')
+
+# 发送群链接分享(hakuBot) (OneBot_v11_cq) 返回 message_id
+# shareUrl 分享链接, title 内容标题, content 内容描述, image 图片url
+def send_group_share_link(gid, shareUrl, title, content, image=''):
+    if image:
+        return send_group_msg(gid, f'[CQ:share,url={shareUrl},title={title},content={musicId},image={image}]')
+    else:
+        return send_group_msg(gid, f'[CQ:share,url={shareUrl},title={title},content={musicId}')
+
+# 发送私聊链接分享(hakuBot) (OneBot_v11_cq) 返回 message_id
+def send_private_share_link(uid, shareUrl, title, content, image=''):
+    if image:
+        return send_private_msg(uid, f'[CQ:share,url={shareUrl},title={title},content={musicId},image={image}]')
+    else:
+        return send_private_msg(uid, f'[CQ:share,url={shareUrl},title={title},content={musicId}]')
+
+# 发送群音乐分享(hakuBot) (OneBot_v11_cq) 返回 message_id
+# music type 包括 qq QQ音乐, 163 网易云音乐, xm 虾米音乐
+def send_group_share_music(gid, musicType, musicId):
+    if not (musicType in ['qq', '163', 'xm']):
+        return 404, {}
+    return send_group_msg(gid, f'[CQ:music,type={musicType},id={musicId}]')
+
+# 发送私聊音乐分享(hakuBot) (OneBot_v11_cq) 返回 message_id
+def send_private_share_music(uid, musicType, musicId):
+    if not (musicType in ['qq', '163', 'xm']):
+        return 404, {}
+    return send_private_msg(uid, f'[CQ:music,type={musicType},id={musicId}]')
+
+# 发送群自定义音乐分享(hakuBot) (OneBot_v11_cq) 返回 message_id
+# jumpUrl 点击后跳转目标URL, musicUrl 音乐URL, title 标题
+def send_group_share_my_music(gid, jumpUrl, musicUrl, title, musicType='custom', image=''):
+    if musicType in ['qq', '163', 'xm']:
+        return 404, {}
+    if image:
+        return send_group_msg(gid, f'[CQ:music,type={musicType},url={jumpUrl},audio={musicUrl},title={title},image={image}]')
+    else:
+        return send_group_msg(gid, f'[CQ:music,type={musicType},url={jumpUrl},audio={musicUrl},title={title}]')
+
+# 发送私聊自定义音乐分享(hakuBot) (OneBot_v11_cq) 返回 message_id
+def send_private_share_my_music(uid, jumpUrl, musicUrl, title, musicType='custom', image=''):
+    if musicType in ['qq', '163', 'xm']:
+        return 404, {}
+    if image:
+        return send_private_msg(uid, f'[CQ:music,type={musicType},url={jumpUrl},audio={musicUrl},title={title},image={image}]')
+    else:
+        return send_private_msg(uid, f'[CQ:music,type={musicType},url={jumpUrl},audio={musicUrl},title={title}]')
 
 # 发送消息(OneBot_v11) 返回 message_id
 def send_msg (msgType, sid, msg, auto_escape = False):

@@ -22,11 +22,25 @@ logDict = {
             'class':'logging.StreamHandler',
             'level': 'DEBUG',
             'formatter': 'default'
+        },
+        'flask_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'default',
+            'filename': './hakuBot.log',
+            'maxBytes': 1000000,
+            'backupCount': 16,
+            'level': 'DEBUG',
+            'delay': False
+        },
+        'flask_console':{
+            'class':'logging.StreamHandler',
+            'level': 'DEBUG',
+            'formatter': 'default'
         }
     },
     'loggers': {
             'werkzeug': {
-                'handlers': ['file', 'console']
+                'handlers': ['flask_file', 'flask_console']
             },
             'hakuBot': {
                 'handlers': ['file', 'console']
@@ -41,6 +55,7 @@ logDict = {
 def init_log_path(lgp):
     global logDict
     logDict['handlers']['file']['filename'] = lgp + '/hakuBot.log'
+    logDict['handlers']['flask_file']['filename'] = lgp + '/hakuBot.log'
 
 def init_log_level(lvl, clvl):
     global logDict
@@ -50,3 +65,12 @@ def init_log_level(lvl, clvl):
         clvl = 'INFO'
     logDict['handlers']['file']['level'] = lvl
     logDict['handlers']['console']['level'] = clvl
+
+def init_flack_log_level(lvl, clvl):
+    global logDict
+    if not lvl in ('CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'):
+        lvl = 'INFO'
+    if not clvl in ('CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'):
+        clvl = 'INFO'
+    logDict['handlers']['flask_file']['level'] = lvl
+    logDict['handlers']['flask_console']['level'] = clvl

@@ -31,6 +31,8 @@ THREAD = serverConfig.get('threads', False)
 PROCESS = serverConfig.get('processes', 1)
 LOGLEVEL = serverConfig.get('log_level', 'INFO')
 CLOGLEVEL = serverConfig.get('console_log_level', 'INFO')
+FLASKLOGLEVEL = 'WARNING'
+FLASKCLOGLEVEL = 'WARNING'
 FLASKDEBUG = False
 
 ADMINQID = hakuConfig.get('admin_qq', 0)
@@ -38,6 +40,7 @@ ADMINGID = hakuConfig.get('admin_group', 0)
 
 # 初始化log
 hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
+hakuLog.init_flack_log_level(FLASKLOGLEVEL, FLASKCLOGLEVEL)
 logging.config.dictConfig(hakuLog.logDict)
 myLogger = logging.getLogger('hakuBot')
 myLogger.info('logger init finished.')
@@ -114,13 +117,16 @@ def update_thread():
             # 重新初始化module
             callHaku.link_modules(pluginDict)
             hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
+            hakuLog.init_flack_log_level(FLASKLOGLEVEL, FLASKCLOGLEVEL)
             hakuApi.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
             hakuCore.report.init_report(ADMINQID, ADMINGID)
             # 重载插件
             for md in pluginDict.keys():
                 if 'quit_plugin' in dir(pluginDict[md]):
                     try:
-                        eval(md + 'quit_plugin')()
+                        myLogger.debug(f'Try to run {md}.quit_plugin')
+                        #eval(md + '.quit_plugin')()
+                        pluginDict[md].quit_plugin()
                     except:
                         myLogger.exception('RuntimeError')
                 try:

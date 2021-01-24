@@ -2,14 +2,10 @@
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
 import logging
-
 myLogger = logging.getLogger('hakuBot')
-pluginModules = dict()
 
-def new_event(msgDict):
-    global myLogger
-    myLogger.debug(f'Call meta event: {msgDict}')
+def main(msgDict):
+    return 'Pong!'
 
-def link_modules(plgs):
-    global pluginModules
-    pluginModules = plgs
+def quit_plugin():
+    myLogger.info('Quit plugin.')

@@ -1,7 +1,7 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import json, logging
+import json, logging, threading, importlib
 import hakuData.method
 import hakuCore.cqhttpApi as hakuApi
 
@@ -14,13 +14,74 @@ hakuConfig = configDict.get('haku_config', {})
 INDEX = hakuConfig.get('index', '.')
 
 myLogger = logging.getLogger('hakuBot')
-
 pluginModules = dict()
 
+# 群消息缓存 {<groupId>:{'pos':0, 'msgCount':0, 'msgDicts':[{'msgDict':{}, 'repeated':False}, ...]}
+groupMsgCacheLock = threading.Lock()
+groupMsgCache = dict()
+
+def check_msg_cache(msgDict):
+    global groupMsgCache, groupMsgCacheLock
+    if msgDict['message_type'] != 'group': return
+    gid = msgDict['group_id']
+    myLogger.debug('Insert message to group message cache.')
+    canRepeat = True
+    with groupMsgCacheLock:
+        # 新消息插入和复读
+        repeatMsg, repeatQid, repeatNow = msgDict['message'], msgDict['user_id'], msgDict['time']
+        if not (gid in groupMsgCache):
+            groupMsgCache[gid] = {'pos':-1, 'msgCount':0, 'msgDicts':[{'msgDict':{}, 'repeated':False} for i in range(16)]}
+            canRepeat = False
+        posNow = (groupMsgCache[gid]['pos'] + 1) % 16
+        posPast = (posNow + 15) % 16
+        groupMsgCache[gid]['msgDicts'][posNow]['msgDict'] = msgDict
+        groupMsgCache[gid]['msgDicts'][posNow]['repeated'] = False
+        groupMsgCache[gid]['pos'] = posNow
+        groupMsgCache[gid]['msgCount'] += 1
+        if canRepeat and repeatMsg == groupMsgCache[gid]['msgDicts'][posPast]['msgDict']['message']:
+            groupMsgCache[gid]['msgDicts'][posNow]['repeated'] = groupMsgCache[gid]['msgDicts'][posPast]['repeated']
+        else:
+            canRepeat = False
+        canRepeat = canRepeat and (not groupMsgCache[gid]['msgDicts'][posNow]['repeated'])
+        # 同一个人
+        if canRepeat and repeatQid == groupMsgCache[gid]['msgDicts'][posPast]['msgDict']['user_id']: canRepeat = False
+        # 超时
+        if canRepeat and repeatNow - groupMsgCache[gid]['msgDicts'][posPast]['msgDict']['time'] >= 60: canRepeat = False
+        # blocklist
+        if repeatMsg in ['[视频]你的QQ暂不支持查看视频短片，请升级到最新版本后查看。']: canRepeat = False
+    if canRepeat and (len(repeatMsg) == 1 or repeatMsg[0] != INDEX):
+        hakuApi.reply_msg(msgDict, repeatMsg)
+
 def new_event(msgDict):
-    myLogger.info('get message: {} by qqid {}'.format(msgDict['message'], msgDict['user_id']))
-    if INDEX in msgDict['message']:
-        myLogger.info(msgDict['message'])
+    global pluginModules
+    myLogger.info(f'Get message: {msgDict}')
+    check_msg_cache(msgDict)
+    if msgDict['message'][0] == INDEX:
+        modName = list(msgDict['message'][1:].split())[0]
+        plgName = f'plugins.message.{modName}'
+        myLogger.debug(f'Cache plugin: {msgDict["message"][1:]}')
+        plgModule = None
+        if plgName in pluginModules:
+            plgModule = pluginModules[plgName]
+            myLogger.debug(f'Reuse plugin: {plgName}')
+        else:
+            try:
+                plgModule = importlib.import_module(plgName)
+                myLogger.debug(f'Load plugin: {plgName}')
+            except ModuleNotFoundError:
+                myLogger.warning(f'Plugin not find: {plgName}')
+            except:
+                myLogger.exception('RuntimeError')
+            else:
+                pluginModules[plgName] = plgModule
+        if plgModule:
+            try:
+                plgMsg = plgModule.main(msgDict)
+                if plgMsg:
+                    hakuApi.reply_msg(msgDict, plgMsg)
+            except:
+                myLogger.exception('RuntimeError')
+                
     #print(hakuApi.reply_msg(msgDict, '诶嘿嘿hhh'))
     #print(hakuApi.get_version_info())
     #print(hakuApi.get_login_info())
@@ -28,6 +89,8 @@ def new_event(msgDict):
     #print(hakuApi.get_group_list())
     #print(hakuApi.get_status())
     #print(hakuApi.send_poke(1146440669, 2521857263))
+    #if msgDict['message_type'] == 'group':
+    #    print(hakuApi.send_group_tts(msgDict['group_id'], msgDict['message']))
 
 def link_modules(plgs):
     global pluginModules

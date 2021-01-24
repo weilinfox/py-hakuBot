@@ -7,30 +7,33 @@ import logging
 pluginModules = dict()
 myLogger = logging.getLogger('hakuBot')
 
-def no_such_module(msgDict):
-    global myLogger
-    myLogger.warning('No such router: {}'.format(msgDict['post_type']))
-
 def new_event(msgDict):
     global pluginModules, myLogger
     msgType = msgDict.get('post_type', 'NULL')
-    if msgType == 'NULL': return
+    if msgType == 'NULL':
+        myLogger.warning(f'Catch inlegal event: {msgDict}')
+        return
+    myLogger.debug(f'Catch new event, message type: {msgType}')
     mdl = 'hakuRouter.{}'.format(msgType)
     imp = pluginModules.get(mdl, None)
     if imp is None:
         try:
             imp = importlib.import_module('hakuRouter.{}'.format(msgType))
             imp.link_modules(pluginModules)
+            myLogger.debug(f'Load new router: {msgType}')
         except ModuleNotFoundError:
-            no_such_module(msgDict)
+            myLogger.warning('No such router: {}'.format(msgDict['post_type']))
         except:
             myLogger.exception('RuntimeError')
         else:
-            pluginModules[msgType] = imp
-    try:
-        imp.new_event(msgDict)
-    except:
-        myLogger.exception('RuntimeError')
+            pluginModules['hakuRouter.{}'.format(msgType)] = imp
+    else:
+        myLogger.debug(f'Reuse router: {msgType}')
+    if imp:
+        try:
+            imp.new_event(msgDict)
+        except:
+            myLogger.exception('RuntimeError')
 
 def link_modules(plgs):
     global pluginModules
