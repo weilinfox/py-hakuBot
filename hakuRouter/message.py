@@ -3,6 +3,7 @@
 
 import json, logging
 import hakuData.method
+import hakuCore.cqhttpApi as hakuApi
 
 configFile = open(hakuData.method.get_config_json(), "r")
 configDict = json.loads(configFile.read())
@@ -20,6 +21,13 @@ def new_event(msgDict):
     myLogger.info('get message: {} by qqid {}'.format(msgDict['message'], msgDict['user_id']))
     if INDEX in msgDict['message']:
         myLogger.info(msgDict['message'])
+    #print(hakuApi.reply_msg(msgDict, '诶嘿嘿hhh'))
+    #print(hakuApi.get_version_info())
+    #print(hakuApi.get_login_info())
+    #print(hakuApi.get_friend_list())
+    #print(hakuApi.get_group_list())
+    #print(hakuApi.get_status())
+    #print(hakuApi.send_poke(1146440669, 2521857263))
 
 def link_modules(plgs):
     global pluginModules

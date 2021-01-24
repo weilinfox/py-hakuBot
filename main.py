@@ -1,3 +1,4 @@
+#!/bin/python3
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
@@ -7,9 +8,11 @@ import logging, logging.config
 import hakuData.log as hakuLog
 import hakuData.method as dataMethod
 import hakuCore.hakuMind as callHaku
+import hakuCore.cqhttpApi as hakuApi
+import hakuCore.report
 
 # 模块记录 用于reload
-modules = ('hakuLog', 'dataMethod', 'callHaku')
+modules = ('hakuLog', 'dataMethod', 'callHaku', 'hakuApi', 'hakuCore.report')
 pluginDict = dict()
 
 # 读取配置
@@ -21,11 +24,17 @@ hakuConfig = configDict.get('haku_config', {})
 
 HOST = serverConfig.get('listen_host', '127.0.0.1')
 PORT = serverConfig.get('listen_port', 8000)
+POSTURL = serverConfig.get('post_url', '127.0.0.1:8001')
+POSTPROTOCOL = 'http'
+TOKEN = serverConfig.get('access_token', '')
 THREAD = serverConfig.get('threads', False)
 PROCESS = serverConfig.get('processes', 1)
 LOGLEVEL = serverConfig.get('log_level', 'INFO')
 CLOGLEVEL = serverConfig.get('console_log_level', 'INFO')
 FLASKDEBUG = False
+
+ADMINQID = hakuConfig.get('admin_qq', 0)
+ADMINGID = hakuConfig.get('admin_group', 0)
 
 # 初始化log
 hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
@@ -42,6 +51,8 @@ threadCount = 0
 
 # 初始化hakuCore
 callHaku.link_modules(pluginDict)
+hakuApi.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
+hakuCore.report.init_report(ADMINQID, ADMINGID)
 
 
 def clear_threadDict():
@@ -103,6 +114,8 @@ def update_thread():
             # 重新初始化module
             callHaku.link_modules(pluginDict)
             hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
+            hakuApi.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
+            hakuCore.report.init_report(ADMINQID, ADMINGID)
             # 重载插件
             for md in pluginDict.keys():
                 if 'quit_plugin' in dir(pluginDict[md]):
