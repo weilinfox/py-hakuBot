@@ -1,43 +1,16 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import socket
+import requests
 import json, logging
 import hakuCore.cqhttpApi as hakuApi
 
-HOST = 'inuyasha.love'
-PORT = 8001
-URL = 'http://inuyasha.love:8001/'
+#HOST = 'inuyasha.love'
+#PORT = 8001
+URL = 'http://inuyasha.love:8001/search'
+BACKURL = 'http://musicapi.leanapp.cn/search'
 
 myLogger = logging.getLogger('hakuBot')
-
-ADDRESS = (HOST, PORT)
-
-def encodeMsg (msg):
-    msg = msg.replace('%', '%25')
-    msg = msg.replace('&', '%26')
-    msg = msg.replace('=', '%3D')
-    msg = msg.replace('+', '%2B')
-    msg = msg.replace('\n', ' ')
-    msg = msg.replace('/', '%2F')
-    msg = msg.replace('#', '%23')
-    msg = msg.replace('?', '%3F')
-    msg = msg.replace('!', '%21')
-    msg = msg.replace('*', '%2A')
-    msg = msg.replace('"', '%22')
-    msg = msg.replace("'", '%27')
-    msg = msg.replace('(', '%28')
-    msg = msg.replace(')', '%29')
-    msg = msg.replace(';', '%3B')
-    msg = msg.replace(':', '%3A')
-    msg = msg.replace('@', '%40')
-    msg = msg.replace('$', '%24')
-    msg = msg.replace(',', '%2C')
-    msg = msg.replace(' ', "%20")
-    msg = str(msg.encode('utf-8', errors='ignore')).replace('\\x', '%')[2:][:-1]
-
-    return 'GET ' + URL + 'search?keywords=' + msg + ' HTTP/1.0\r\n\r\n'
-    
 
 def main (msgDict):
     helpMsg = '小白会试着从网易云搜索~'
@@ -47,32 +20,33 @@ def main (msgDict):
         req[1] = req[1].strip()
     if len(req) > 1 and len(req[1]) > 0:
         try:
-            server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            server_socket.connect(ADDRESS)
-            server_socket.send(encodeMsg(req[1]).encode('utf-8', errors='ignore'))
-            tmpbuf = server_socket.recv(2048)
-            rebuf = b''
-            while len(tmpbuf):
-                rebuf += tmpbuf
-                tmpbuf = server_socket.recv(2048)
-            restr = list(rebuf.decode('utf-8').split('\r\n'))
-            rejson = json.loads(restr[len(restr)-1])
-            if rejson['code'] == 200:
-                if rejson['result'].get('songs'):
-                    mscid = rejson['result']['songs'][0]['id']
-                    mscname = rejson['result']['songs'][0]['name']
-                    #ans = '[CQ:share,url=https://music.163.com/song/' + str(mscid) + '/,title=' + str(mscname) + ']'
-                    if msgDict['message_type'] == 'group':
-                        hakuApi.send_group_share_music(msgDict['group_id'], '163', mscid)
-                    else:
-                        hakuApi.send_private_share_music(msgDict['user_id'], '163', mscid)
-                else:
-                    ans = '网易云里没有诶~'
-            else:
-                ans = '好像返回了奇怪的东西: ' + str(rejson['code'])
+            resp = requests.get(url=URL, params={'keywords':req[1]})
+        except ConnectionError:
+            try: 
+                resp = requests.get(url=BACKURL, params={'keywords':req[1]})
+            except ConnectionError:
+                ans = '啊嘞嘞好像出错了'
+            except:
+                myLogger.exception('RuntimeError')
+                return '啊嘞嘞好像出错了'
         except:
             myLogger.exception('RuntimeError')
-            ans = '啊嘞嘞好像出错了'
+            return '啊嘞嘞好像出错了'
+        if resp.status_code == 200:
+            rejson = json.loads(resp.text)
+            # print(resp.text)
+            if rejson['result'].get('songs'):
+                mscid = rejson['result']['songs'][0]['id']
+                mscname = rejson['result']['songs'][0]['name']
+                #ans = '[CQ:share,url=https://music.163.com/song/' + str(mscid) + '/,title=' + str(mscname) + ']'
+                if msgDict['message_type'] == 'group':
+                    hakuApi.send_group_share_music(msgDict['group_id'], '163', mscid)
+                else:
+                    hakuApi.send_private_share_music(msgDict['user_id'], '163', mscid)
+            else:
+                ans = '网易云里没有诶~'
+        else:
+            ans = '好像返回了奇怪的东西: ' + str(resp.status_code)
     else:
         ans = helpMsg
 

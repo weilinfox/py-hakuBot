@@ -1,7 +1,7 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import os
+import os, threading
 import hakuData.log
 
 # 路径检测和初始化
@@ -60,6 +60,7 @@ if not os.path.exists(configFile) or not os.path.isfile(configFile):
     config.close()
 
 # 获取各目录配置文件
+filenamesLock = threading.Lock()
 def get_filenames():
     global csvFiles, sqliteFiles, jsonFiles
     f = os.walk(csvPath)
@@ -76,18 +77,30 @@ def get_config_json():
 # 插件配置路径
 def get_plugin_config_json(fileName):
     global jsonPath, jsonFiles
-    filePath = "{}/{}".format(jsonPath, fileName)
-    if not fileName in jsonFiles:
+    filePath = "{}/{}.json".format(jsonPath, fileName)
+    # print(jsonFiles)
+    if not f'{fileName}.json' in jsonFiles:
         conf = open(filePath, "w")
         conf.write(
 '''
-{}
+{
+    "auth": {
+        "allow_group":[],
+        "allow_user":[],
+        "block_group":[],
+        "block_user":[],
+        "no_error_msg": false
+    }
+}
 '''
             )
         conf.close()
+    with filenamesLock:
+        get_filenames()
     return filePath
 
-get_filenames()
+with filenamesLock:
+    get_filenames()
 hakuData.log.init_log_path(logPath)
 
 if __name__ == '__main__':

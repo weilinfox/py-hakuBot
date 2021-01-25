@@ -11,6 +11,9 @@ refreshTime = dict()
 
 def regest_router(routerName, initDict):
     global statusDict, refreshTime
+    if routerName in statusDict:
+        myLogger.error(f'Conflict router name: {routerName}')
+        return
     myLogger.debug(f'{routerName} regested with dict {initDict}')
     statusDict[routerName] = initDict
     refreshTime[routerName] = time.time()
