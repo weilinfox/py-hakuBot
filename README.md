@@ -32,6 +32,8 @@ hakuBot，利用go-cqhttp在龙芯和其他平台快速构建的qq机器人。
 
 ## go-cqhttp 的报文示例
 
+```
 {'interval': 5000, 'meta_event_type': 'heartbeat', 'post_type': 'meta_event', 'self_id': 27505, 'status': {'app_enabled': True, 'app_good': True, 'app_initialized': True, 'good': True, 'online': True, 'plugins_good': None, 'stat': {'packet_received': 17, 'packet_sent': 15, 'packet_lost': 0, 'message_received': 0, 'message_sent': 0, 'disconnect_times': 0, 'lost_times': 0}}, 'time': 1611308002}
 
 {'font': 0, 'message': '这是一个测试', 'message_id': 15945 'message_type': 'private', 'post_type': 'message', 'raw_message': '这是一个测试', 'self_id': 27505, 'sender': {'age': 0, 'nickname': '昵称', 'sex': 'unknown', 'user_id': 25218}, 'sub_type': 'friend', 'time': 16113, 'user_id': 25218}
+```

@@ -17,9 +17,7 @@ modules = ('hakuLog', 'hakuStatus', 'dataMethod', 'callHaku', 'hakuApi', 'hakuCo
 pluginDict = dict()
 
 # 读取配置
-configFile = open(dataMethod.get_config_json(), "r")
-configDict = json.loads(configFile.read())
-configFile.close()
+configDict = dataMethod.get_config_dict()
 serverConfig = configDict.get('server_config', {})
 hakuConfig = configDict.get('haku_config', {})
 

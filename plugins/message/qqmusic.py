@@ -14,6 +14,8 @@ def main (msgDict):
     if len(req) > 1:
         req[1] = req[1].strip()
     if len(req) > 1 and len(req[1]) > 0:
+        # https://c.y.qq.com/soso/fcgi-bin/client_search_cp?
+        # ct=24&qqmusic_ver=1298&new_json=1&remoteplace=txt.yqq.song&searchid=&t=0&aggr=1&cr=1&catZhida=1&loseless=0&flag_qc=0&p=1&n=20&w=777
         url = 'https://c.y.qq.com/soso/fcgi-bin/client_search_cp'
         params = {
             'ct': 24,
@@ -39,7 +41,8 @@ def main (msgDict):
                 if rejson['data']['song']['totalnum'] == 0:
                     ans = '好像啥也没找到umm'
                 else:
-                    mscid = rejson['data']['song']['list'][0]['mid']
+                    #mscid = rejson['data']['song']['list'][0]['mid']
+                    mscid = rejson['data']['song']['list'][0]['id']
                     mscname = rejson['data']['song']['list'][0]['name']
                     if msgDict['message_type'] == 'group':
                         hakuApi.send_group_share_music(msgDict['group_id'], 'qq', mscid)
@@ -54,5 +57,4 @@ def main (msgDict):
     else:
         ans = helpMsg
 
-    return ans
- 
+

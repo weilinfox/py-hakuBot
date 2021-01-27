@@ -1,11 +1,12 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import os, threading
+import os, sys, threading, json
 import hakuData.log
 
 # 路径检测和初始化
-dataPath = os.path.normpath(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) + '/files'
+mainPath = os.path.normpath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+dataPath = mainPath + '/files'
 dataPath = os.path.normpath(dataPath)
 csvPath = dataPath + '/csv'
 csvFiles = {}
@@ -36,8 +37,7 @@ if not os.path.exists(configFile) or not os.path.isfile(configFile):
     config = open(configFile, 'w')
     # default config data
     config.write(
-'''
-{
+'''{
     "server_config":{
         "listen_host": "127.0.0.1",
         "listen_port": 8000,
@@ -53,11 +53,17 @@ if not os.path.exists(configFile) or not os.path.isfile(configFile):
         "admin_group": -1,
         "index": "."
     }
-}
-
-'''
+}'''
         )
     config.close()
+    print('The initial config file has created, you should edit it manually.')
+    sys.exit()
+
+# 主配置
+configFilePath = dataPath + '/config.json'
+configFile = open(configFilePath, "r")
+configFileDict = json.loads(configFile.read())
+configFile.close()
 
 # 获取各目录配置文件
 filenamesLock = threading.Lock()
@@ -70,9 +76,18 @@ def get_filenames():
     f = os.walk(jsonPath)
     jsonFiles = set(next(f)[2])
 
+def get_main_path():
+    return mainPath
+
+def get_data_path():
+    return dataPath
+
 # config.json路径
 def get_config_json():
-    return dataPath + '/config.json'
+    return configFilePath
+# config.json内容
+def get_config_dict():
+    return configFileDict
 
 # 插件配置路径
 def get_plugin_config_json(fileName):

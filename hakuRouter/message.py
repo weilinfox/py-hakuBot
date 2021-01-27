@@ -6,9 +6,7 @@ import hakuData.method
 import hakuData.status
 import hakuCore.cqhttpApi as hakuApi
 
-configFile = open(hakuData.method.get_config_json(), "r")
-configDict = json.loads(configFile.read())
-configFile.close()
+configDict = hakuData.method.get_config_dict()
 serverConfig = configDict.get('server_config', {})
 hakuConfig = configDict.get('haku_config', {})
 
@@ -137,6 +135,7 @@ def new_event(msgDict):
                     hakuApi.reply_msg(msgDict, plgMsg)
             except:
                 myLogger.exception('RuntimeError')
+    myLogger.info(hakuApi.get_status())
 
 def link_modules(plgs):
     global pluginModules
