@@ -20,7 +20,7 @@ hakuBot，利用go-cqhttp在龙芯和其他平台快速构建的qq机器人。
 
 由于重载插件和数据持久化执行时需要所有其他插件相关的线程退出，插件不允许常驻内存。hakuBot并不会主动杀死线程，但是无法正常退出的线程会在自主升级时导致消息处理的停止。重载插件/退出程序时会自动执行每个插件下的 ``quit_plugin()`` 函数（如果存在），可以在其中执行数据持久化相关逻辑。
 
-插件的重载通过 ``main.py`` 中的 ``pluginDict`` 实现，它通过 ``link_modules()`` 向第一级插件传递该字典，第一级插件在载入插件时将插件的模块对象记录其中。重载时重载其中的所有对象。因此所有第一级插件必须包含一个 ``link_modules()`` 函数，并在载入新插件时以 ``{<模块名>:<模块对象>}`` 的方式向其中添加字段。
+插件的重载通过 ``main.py`` 中的 ``pluginDict`` 实现，它通过 ``link_modules()`` 向 ``hakuCore/hakuMind`` 和 ``hakuCore/plugin`` 传递该字典， ``hakuCore/hakuMind`` 在载入第一级插件时将第一级插件记录其中， ``hakuCore/plugin`` 在载入第二级插件时将第二级插件记录其中。重载时重载 ``pluginDict`` 中的所有对象。因此所有第一级插件必须通过 ``hakuCore/plugin`` 调用第二级插件。
 
 第一级插件（router）的状态对hakuBot的正常运行非常重要，因此指定了一个模块用于状态的统计，也就是 ``hakuData/status`` ，所有模块都可以注册并记录状态，其他插件可以随意调用其中的数据。注册插件要求其插件名是唯一的，如果注册时发现插件名并非唯一，会在日志中记录错误信息，但是并不保证修改状态记录时会被阻止（理论上插件名不唯一并不可能发生）。
 
@@ -29,6 +29,8 @@ hakuBot，利用go-cqhttp在龙芯和其他平台快速构建的qq机器人。
 每个插件在 ``files/json/`` 目录中都对应一个配置文件，如果不存在则会在首次调用插件时自动创建。配置中的 ``auth`` 字段用于权限配置， 包含 ``allow_group`` ``allow_user`` ``block_group`` ``block_user`` ``no_error_msg`` 五个字段，用途为名称字面意思。其中当 ``no_error_msg`` 为 ``false`` 时将调用一个特殊的第二级插件： ``auth_failed`` 。
 
 每次第一级插件调用第二级插件时都会通过 ``hakuData.method.get_plugin_config_json()`` 读取对应的配置并进行准入判断，如果判断失败则试图调用 ``auth_failed`` 。为了防止 ``auth_failed`` 被误触发，可以在其配置文件中置 ``allow_user`` 为 ``[0]``，  ``no_error_msg`` 为 ``true`` 。
+
+注意 ``hakuRouter/meta_event`` 在调用群组设置的定时调用插件时 ``user_id`` 为 ``-1`` 。错误阻止这一id将造成群组定时调用插件失败。
 
 ## go-cqhttp 的报文示例
 

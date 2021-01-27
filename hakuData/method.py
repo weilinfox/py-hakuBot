@@ -83,6 +83,9 @@ def get_main_path():
 def get_data_path():
     return dataPath
 
+def get_plugin_path(routerName, mdlName):
+    return f'{mainPath}/plugins/{routerName}/{mdlName}.py'
+
 # config.json路径
 def get_config_json():
     return configFilePath

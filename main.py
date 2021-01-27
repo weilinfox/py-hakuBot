@@ -10,13 +10,14 @@ import hakuData.method as dataMethod
 import hakuData.status as hakuStatus
 import hakuCore.hakuMind as callHaku
 import hakuCore.cqhttpApi as hakuApi
+import hakuCore.plugin as hakuPlg
 import hakuCore.report
 
 # 版本
 VERSION = 'py-hakuBot v0.0.1'
 
 # 模块记录 用于reload
-modules = ('hakuLog', 'hakuStatus', 'dataMethod', 'callHaku', 'hakuApi', 'hakuCore.report')
+modules = ('hakuLog', 'hakuStatus', 'dataMethod', 'callHaku', 'hakuApi', 'hakuPlg', 'hakuCore.report')
 pluginDict = dict()
 
 # 读取配置
@@ -57,8 +58,8 @@ threadCount = 0
 # 初始化hakuCore
 callHaku.link_modules(pluginDict)
 hakuApi.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
+hakuPlg.link_modules(pluginDict)
 hakuCore.report.init_report(ADMINQID, ADMINGID)
-
 
 def clear_threadDict():
     # 清理threadDict
@@ -121,6 +122,7 @@ def update_thread():
             hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
             hakuLog.init_flack_log_level(FLASKLOGLEVEL, FLASKCLOGLEVEL)
             hakuApi.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
+            hakuPlg.link_modules(pluginDict)
             hakuCore.report.init_report(ADMINQID, ADMINGID)
             # 重载插件
             for md in pluginDict.keys():
@@ -136,10 +138,7 @@ def update_thread():
                     pluginDict[md] = importlib.reload(pluginDict[md])
                 except:
                     myLogger.exception('RuntimeError')
-                else:
-                    # 重新初始化一级插件
-                    if not ('.' in md):
-                        pluginDict[md].link_modules(pluginDict)
+
     threadCount -= 1
 
 # 事件触发

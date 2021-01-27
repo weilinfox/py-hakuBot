@@ -5,6 +5,7 @@ import json, logging, threading, importlib
 import hakuData.method
 import hakuData.status
 import hakuCore.cqhttpApi as hakuApi
+import hakuCore.plugin as hakuPlg
 
 configDict = hakuData.method.get_config_dict()
 serverConfig = configDict.get('server_config', {})
@@ -13,7 +14,6 @@ hakuConfig = configDict.get('haku_config', {})
 INDEX = hakuConfig.get('index', '.')
 
 myLogger = logging.getLogger('hakuBot')
-pluginModules = dict()
 
 # 群消息缓存 {<groupId>:{'pos':0, 'msgCount':0, 'msgDicts':[{'msgDict':{}, 'repeated':False}, ...]}
 groupMsgCacheLock = threading.Lock()
@@ -71,73 +71,12 @@ def check_msg_cache(msgDict):
     if canRepeat and (len(repeatMsg) == 1 or repeatMsg[0] != INDEX):
         hakuApi.reply_msg(msgDict, repeatMsg)
 
-# 准入规则 需要满足配置中的各条
-def check_plugin_auth(msgDict, plgName):
-    allow = True
-    plgConf = hakuData.method.get_plugin_config_json(plgName)
-    plgFile = open(plgConf, 'r')
-    plgJson = plgFile.read()
-    plgFile.close()
-    plgDict = json.loads(plgJson)
-    # 没有auth字段 停止执行
-    if not ('auth' in plgDict):
-        return False
-    # 准入判断
-    no_error_msg = plgDict['auth'].get('no_error_msg', False)
-    if msgDict['message_type'] == 'group':
-        alwGrp = plgDict['auth'].get('allow_group', [])
-        blkGrp = plgDict['auth'].get('block_group', [])
-        if alwGrp:
-            if not (msgDict['group_id'] in alwGrp): allow = False
-        if msgDict['group_id'] in blkGrp: allow = False
-    alwUsr = plgDict['auth'].get('allow_user', [])
-    blkUsr = plgDict['auth'].get('block_user', [])
-    if alwUsr:
-        if not (msgDict['user_id'] in alwUsr): allow = False
-    if msgDict['user_id'] in blkUsr: allow = False
-    
-    return allow, no_error_msg
-
 def new_event(msgDict):
-    global pluginModules
     check_msg_cache(msgDict)
     myLogger.info(f'Current message frequency: {msgTimeCacheLen}/min\nGet message: {msgDict}')
     modName = ''
     if msgDict['message'][0] == INDEX:
         modName = list(msgDict['message'][1:].split())[0]
     if modName:
-        plgName = f'plugins.message.{modName}'
         myLogger.debug(f'Cache plugin: {msgDict["message"][1:]}')
-        plgModule = None
-        allow, no_error_msg = check_plugin_auth(msgDict, plgName)
-        if not allow:
-            myLogger.info(
-                f"User {msgDict.get('user_id', 0)} of group {msgDict.get('group_id', 0)} was blocked while calling plugin {plgName}"
-                )
-            if no_error_msg: plgName = ''
-            else: plgName = 'plugins.message.auth_failed'
-        if plgName and plgName in pluginModules:
-            plgModule = pluginModules[plgName]
-            myLogger.debug(f'Reuse plugin: {plgName}')
-        elif plgName:
-            try:
-                plgModule = importlib.import_module(plgName)
-                myLogger.debug(f'Load plugin: {plgName}')
-            except ModuleNotFoundError:
-                myLogger.warning(f'Plugin not find: {plgName}')
-            except:
-                myLogger.exception('RuntimeError')
-            else:
-                pluginModules[plgName] = plgModule
-        if plgModule:
-            try:
-                plgMsg = plgModule.main(msgDict)
-                if plgMsg:
-                    hakuApi.reply_msg(msgDict, plgMsg)
-            except:
-                myLogger.exception('RuntimeError')
-    myLogger.info(hakuApi.get_status())
-
-def link_modules(plgs):
-    global pluginModules
-    pluginModules = plgs
+        hakuPlg.run_module(msgDict, 'message', modName)

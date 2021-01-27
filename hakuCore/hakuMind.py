@@ -19,7 +19,6 @@ def new_event(msgDict):
     if imp is None:
         try:
             imp = importlib.import_module('hakuRouter.{}'.format(msgType))
-            imp.link_modules(pluginModules)
             myLogger.debug(f'Load new router: {msgType}')
         except ModuleNotFoundError:
             myLogger.warning('No such router: {}'.format(msgDict['post_type']))

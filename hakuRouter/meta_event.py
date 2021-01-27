@@ -6,14 +6,24 @@ import hakuData.status
 import hakuData.method
 import hakuCore.cqhttpApi
 import hakuCore.report
+import hakuCore.plugin
 
 myLogger = logging.getLogger('hakuBot')
-pluginModules = dict()
 
 configDict = hakuData.method.get_config_dict()
 serverConfig = configDict.get('server_config', {})
 hakuConfig = configDict.get('haku_config', {})
 INDEX = hakuConfig.get('index', '.')
+
+meta_msg_event = {
+    'message':'',
+    'raw_message':'',
+    'message_id':-1,
+    'message_type':'',
+    'post_type':'message',
+    'user_id':-1,
+    'group_id':-1
+}
 
 # 消息统计
 heartBeatCache = list()
@@ -38,7 +48,7 @@ groupDateLock = threading.Lock()
 groupDateFile = 'meta_event.group_schedual.csv'
 groupDateDict = dict()
 updateTime = int(time.time())
-processTimeSet = set()
+processTimeNow = ''
 
 def load_group_time_csv():
     global groupTimeDict
@@ -54,8 +64,7 @@ def load_group_time_csv():
                     groupTimeDict[dct['group_id']][dct['time']] = [dct['message']]
             else:
                 groupTimeDict[dct['group_id']] = {'time':{dct['time']}, dct['time']:[dct['message']]}
-    myLogger.debug('Finish loading group time table.')
-    print(groupTimeDict)
+    myLogger.debug(f'Finish loading group time table. {groupTimeDict}')
 
 def load_group_date_csv():
     global groupDateDict
@@ -71,8 +80,7 @@ def load_group_date_csv():
                     groupDateDict[dct['group_id']][dct['date']] = [dct['message']]
             else:
                 groupDateDict[dct['group_id']] = {'date':{dct['date']}, dct['date']:[dct['message']]}
-    myLogger.debug('Finish loading group schedual.')
-    print(groupDateDict)
+    myLogger.debug(f'Finish loading group schedual. {groupDateDict}')
 
 def load_user_time_csv():
     global userTimeDict
@@ -88,8 +96,7 @@ def load_user_time_csv():
                     userTimeDict[dct['user_id']][dct['time']] = [dct['message']]
             else:
                 userTimeDict[dct['user_id']] = {'time':{dct['time']}, dct['time']:[dct['message']]}
-    myLogger.debug('Finish loading user time table.')
-    print(userTimeDict)
+    myLogger.debug(f'Finish loading user time table. {userTimeDict}')
 
 def load_user_date_csv():
     global userDateDict
@@ -105,12 +112,11 @@ def load_user_date_csv():
                     userDateDict[dct['user_id']][dct['date']] = [dct['message']]
             else:
                 userDateDict[dct['user_id']] = {'date':{dct['date']}, dct['date']:[dct['message']]}
-    myLogger.debug('Finish loading user schedual.')
-    print(userDateDict)
+    myLogger.debug(f'Finish loading user schedual. {userDateDict}')
 
 def new_event(msgDict):
     global myLogger, heartBeatCache, heartBeatCacheLen, errorCount
-    global userTimeDict, groupTimeDict, updateTime, processTimeSet
+    global userTimeDict, groupTimeDict, updateTime, processTimeNow
     timeNow = int(time.time())
     # 获取go-cqhttp状态
     cqhttpStatus = msgDict.get('status', {})
@@ -163,8 +169,9 @@ def new_event(msgDict):
     groupComs = dict()
     userTimes = dict()
     userComs = dict()
-    if not timeFlag in processTimeSet:
-        processTimeSet.add(timeFlag)
+    if  timeFlag != processTimeNow:
+        processTimeNow = timeFlag
+        needSend = False
         # 群时间表
         for grpDctK in groupTimeDict.keys():
             if timeFlag in groupTimeDict[grpDctK]['time']:
@@ -209,39 +216,52 @@ def new_event(msgDict):
                             userComs[usrDctK].append(msg)
                         else:
                             userTimes[usrDctK].append(msg)
-        print(dateFlag, timeFlag)
-        print(groupTimes)
-        print(groupComs)
-        print(userTimes)
-        print(userComs)
-        # 等待时机
-        newTime_struct = time.gmtime(time.time() + 8 * 3600 + 60) # 下一分钟
-        newTimeFlag = str(time_struct.tm_hour * 100 + time_struct.tm_min)
-        if newTimeFlag == timeFlag:
-            waitSec = 60 - (int(time.time()) % 60) - 1
-            if waitSec > 0:
-                myLogger.debug(f'Wait for {waitSec}s')
-                time.sleep(waitSec)
-        myLogger.debug('Waiting...')
-        while int(time.time()) % 60 != 0: pass
-        # 发送
-        myLogger.debug('Send!')
-        for grp in groupTimes.keys():
-            print(grp, groupTimes[grp])
-            for msg in groupTimes[grp]:
-                print(msg)
-                hakuCore.cqhttpApi.send_group_msg(grp, msg)
-        for usr in userTimes.keys():
-            print(usr, userTimes[usr])
-            for msg in userTimes[usr]:
-                print(msg)
-                hakuCore.cqhttpApi.send_private_msg(usr, msg)
-        processTimeSet.remove(timeFlag)
-
-def link_modules(plgs):
-    global pluginModules
-    pluginModules = plgs
-
+        if groupTimes:
+            needSend = True
+            myLogger.debug(f'group time: {groupTimes}')
+        if groupComs:
+            needSend = True
+            myLogger.debug(f'group command: {groupComs}')
+        if userTimes:
+            needSend = True
+            myLogger.debug(f'user time: {userTimes}')
+        if userComs:
+            needSend = True
+            myLogger.debug(f'user command: {userComs}')
+        if needSend:
+            # 等待时机
+            newTime_struct = time.gmtime(time.time() + 8 * 3600 + 60) # 下一分钟
+            newTimeFlag = str(time_struct.tm_hour * 100 + time_struct.tm_min)
+            if newTimeFlag == timeFlag:
+                waitSec = 60 - (int(time.time()) % 60) - 1
+                if waitSec > 0:
+                    myLogger.debug(f'Wait for {waitSec}s')
+                    time.sleep(waitSec)
+            myLogger.debug('About to send.')
+            while int(time.time()) % 60 != 0: pass
+            # 发送
+            for grp in groupTimes.keys():
+                for msg in groupTimes[grp]:
+                    hakuCore.cqhttpApi.send_group_msg(grp, msg)
+            for usr in userTimes.keys():
+                for msg in userTimes[usr]:
+                    hakuCore.cqhttpApi.send_private_msg(usr, msg)
+            msgEvent = meta_msg_event.copy()
+            msgEvent['message_type'] = 'group'
+            for grp in groupComs.keys():
+                msgEvent['group_id'] = int(grp)
+                for msg in groupComs[grp]:
+                    msgEvent['message'] = msgEvent['raw_message'] = msg
+                    modName = list(msg[1:].split())[0]
+                    hakuCore.plugin.run_module(msgEvent, 'message', modName)
+            msgEvent['message_type'] = 'private'
+            msgEvent['group_id'] = -1
+            for usr in userComs.keys():
+                msgEvent['user_id'] = int(usr)
+                for msg in userComs[usr]:
+                    msgEvent['message'] = msgEvent['raw_message'] = msg
+                    modName = list(msg[1:].split())[0]
+                    hakuCore.plugin.run_module(msgEvent, 'message', modName)
 
 # 数据初始化
 load_group_time_csv()

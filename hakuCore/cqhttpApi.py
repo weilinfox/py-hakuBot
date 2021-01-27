@@ -25,10 +25,11 @@ def init_api_url(ptcl, url, token):
     uploadProtocol, uploadUrl, uploadToken = (ptcl, url, token)
 
 def send_cqhttp_request(path, params):
-    myLogger.info(f'Send message to {path} : {params}')
     # 如果需要token
     if uploadToken: params['access_token'] = uploadToken
-    return requests.get(url=f'{uploadProtocol}://{uploadUrl}{path}',params=params)
+    resp = requests.get(url=f'{uploadProtocol}://{uploadUrl}{path}',params=params)
+    myLogger.info(f'Send message to {path} : {params}')
+    return resp
 
 def parse_cqhttp_resp(resp):
     if resp.status_code == 200:
