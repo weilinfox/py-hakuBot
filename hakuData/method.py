@@ -1,7 +1,7 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import os, sys, threading, json
+import os, sys, threading, json, csv
 import hakuData.log
 
 # 路径检测和初始化
@@ -68,13 +68,14 @@ configFile.close()
 # 获取各目录配置文件
 filenamesLock = threading.Lock()
 def get_filenames():
-    global csvFiles, sqliteFiles, jsonFiles
-    f = os.walk(csvPath)
-    csvFiles = set(next(f)[2])
-    f = os.walk(sqlitePath)
-    sqliteFiles = set(next(f)[2])
-    f = os.walk(jsonPath)
-    jsonFiles = set(next(f)[2])
+    global csvFiles, sqliteFiles, jsonFiles, filenamesLock
+    with filenamesLock:
+        f = os.walk(csvPath)
+        csvFiles = set(next(f)[2])
+        f = os.walk(sqlitePath)
+        sqliteFiles = set(next(f)[2])
+        f = os.walk(jsonPath)
+        jsonFiles = set(next(f)[2])
 
 def get_main_path():
     return mainPath
@@ -90,11 +91,12 @@ def get_config_dict():
     return configFileDict
 
 # 插件配置路径
-def get_plugin_config_json(fileName):
+def get_plugin_config_json(plgName):
     global jsonPath, jsonFiles
-    filePath = "{}/{}.json".format(jsonPath, fileName)
+    fileName = f'{plgName}.json'
+    filePath = "{}/{}".format(jsonPath, fileName)
     # print(jsonFiles)
-    if not f'{fileName}.json' in jsonFiles:
+    if not fileName in jsonFiles:
         conf = open(filePath, "w")
         conf.write(
 '''
@@ -110,12 +112,51 @@ def get_plugin_config_json(fileName):
 '''
             )
         conf.close()
-    with filenamesLock:
-        get_filenames()
+    jsonFiles.add(fileName)
     return filePath
 
-with filenamesLock:
-    get_filenames()
+# csv文件操作
+csvFileLock = threading.Lock()
+def touch_csv_file(fileName, headers):
+    global csvFiles, csvFileLock
+    if fileName in csvFile:
+        return
+    with csvFileLock:
+        csvf = open(filePath, 'w')
+        writer = csv.DictWriter(csvf, headers)
+        writer.writeheader()
+        csvf.close()
+        csvFiles.add(fileName)
+
+def read_dict_csv_file(fileName, headers):
+    global csvFiles, csvFileLock
+    filePath = f'{csvPath}/{fileName}'
+    if not fileName in csvFiles:
+        touch_csv_file(fileName, headers)
+        return []
+    else:
+        with csvFileLock:
+            dictList = []
+            csvf = open(filePath, 'r')
+            reader = csv.DictReader(csvf)
+            for s in reader:
+                dictList.append(s)
+        return dictList
+
+def write_dict_csv_file(fileName, headers, fileDict):
+    global csvFile, csvFileLock
+    if not fileName in csvFile:
+        raise FileNotFoundError(f'No such csv file: {fileName}')
+    filePath = f'{csvPath}/{fileName}'
+    with csvFileLock:
+        csvf = open(filePath, 'w')
+        writer = csv.DictWriter(csvf, headers)
+        for dct in fileDict:
+            writer.writerow(dct)
+        csvf.close()
+    return 0
+
+get_filenames()
 hakuData.log.init_log_path(logPath)
 
 if __name__ == '__main__':
