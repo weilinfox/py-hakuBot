@@ -119,10 +119,11 @@ def get_plugin_config_json(plgName):
 csvFileLock = threading.Lock()
 def touch_csv_file(fileName, headers):
     global csvFiles, csvFileLock
-    if fileName in csvFile:
-        return
+    if fileName in csvFiles:
+        return 1
+    filePath = f'{csvPath}/{fileName}'
     with csvFileLock:
-        csvf = open(filePath, 'w')
+        csvf = open(filePath, 'w', newline='')
         writer = csv.DictWriter(csvf, headers)
         writer.writeheader()
         csvf.close()
@@ -137,20 +138,22 @@ def read_dict_csv_file(fileName, headers):
     else:
         with csvFileLock:
             dictList = []
-            csvf = open(filePath, 'r')
+            csvf = open(filePath, newline='')
             reader = csv.DictReader(csvf)
             for s in reader:
                 dictList.append(s)
+            csvf.close()
         return dictList
 
 def write_dict_csv_file(fileName, headers, fileDict):
-    global csvFile, csvFileLock
-    if not fileName in csvFile:
+    global csvFiles, csvFileLock
+    if not fileName in csvFiles:
         raise FileNotFoundError(f'No such csv file: {fileName}')
     filePath = f'{csvPath}/{fileName}'
     with csvFileLock:
-        csvf = open(filePath, 'w')
+        csvf = open(filePath, 'w', newline='')
         writer = csv.DictWriter(csvf, headers)
+        writer.writeheader()
         for dct in fileDict:
             writer.writerow(dct)
         csvf.close()
