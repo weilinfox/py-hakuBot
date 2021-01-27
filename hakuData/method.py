@@ -43,7 +43,7 @@ if not os.path.exists(configFile) or not os.path.isfile(configFile):
         "listen_port": 8000,
         "post_url": "127.0.0.1:8001",
         "access_token": "",
-        "threads": false,
+        "threads": true,
         "processes": 1,
         "log_level": "INFO",
         "console_log_level": "INFO"
