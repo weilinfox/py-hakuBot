@@ -12,6 +12,9 @@ import hakuCore.hakuMind as callHaku
 import hakuCore.cqhttpApi as hakuApi
 import hakuCore.report
 
+# 版本
+VERSION = 'py-hakuBot v0.0.1'
+
 # 模块记录 用于reload
 modules = ('hakuLog', 'hakuStatus', 'dataMethod', 'callHaku', 'hakuApi', 'hakuCore.report')
 pluginDict = dict()
@@ -164,6 +167,10 @@ def updateMsg():
     threadDict[newThread] = time.time()
     newThread.start()
     return ''
+
+@flaskApp.route('/VERSION', methods=['POST', 'GET'])
+def versionMsg():
+    return VERSION
 
 # 运行flask
 if __name__ == "__main__":

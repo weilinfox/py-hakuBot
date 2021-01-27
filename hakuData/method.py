@@ -117,6 +117,7 @@ def get_plugin_config_json(plgName):
 
 # csv文件操作
 csvFileLock = threading.Lock()
+csvUpdateSet = set() # csv update一次性标志
 def touch_csv_file(fileName, headers):
     global csvFiles, csvFileLock
     if fileName in csvFiles:
@@ -146,7 +147,7 @@ def read_dict_csv_file(fileName, headers):
         return dictList
 
 def write_dict_csv_file(fileName, headers, fileDict):
-    global csvFiles, csvFileLock
+    global csvFiles, csvFileLock, csvUpdateSet
     if not fileName in csvFiles:
         raise FileNotFoundError(f'No such csv file: {fileName}')
     filePath = f'{csvPath}/{fileName}'
@@ -157,7 +158,17 @@ def write_dict_csv_file(fileName, headers, fileDict):
         for dct in fileDict:
             writer.writerow(dct)
         csvf.close()
+        csvUpdateSet.add(fileName)
     return 0
+
+def get_csv_update_flag(fileName):
+    global csvUpdateSet, csvFileLock
+    flag = False
+    with csvFileLock:
+        if fileName in csvUpdateSet:
+            csvUpdateSet.remove(fileName)
+            flag = True
+    return flag
 
 get_filenames()
 hakuData.log.init_log_path(logPath)

@@ -67,6 +67,7 @@ def check_msg_cache(msgDict):
         if canRepeat and repeatNow - groupMsgCache[gid]['msgDicts'][posPast]['msgDict']['time'] >= 60: canRepeat = False
         # blocklist
         if repeatMsg in ['[视频]你的QQ暂不支持查看视频短片，请升级到最新版本后查看。']: canRepeat = False
+        if canRepeat: groupMsgCache[gid]['msgDicts'][posNow]['repeated'] = True
     if canRepeat and (len(repeatMsg) == 1 or repeatMsg[0] != INDEX):
         hakuApi.reply_msg(msgDict, repeatMsg)
 
