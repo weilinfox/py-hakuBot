@@ -15,6 +15,7 @@ sqliteFiles = {}
 jsonPath = dataPath + '/json'
 jsonFiles = {}
 configFile = dataPath + '/config.json'
+keysFile = dataPath + '/keys.json'
 logPath = dataPath + '/log'
 
 if not os.path.exists(dataPath):
@@ -32,8 +33,17 @@ if not os.path.exists(jsonPath):
 if not os.path.exists(logPath):
     print('mkdir {}', logPath)
     os.mkdir(logPath)
+if not os.path.exists(keysFile):
+    print('edit {}'.format(keysFile))
+    kys = open(keysFile, 'w')
+    kys.write(
+'''{
+    "sample":"myKey"
+}'''
+        )
+    kys.close()
 if not os.path.exists(configFile) or not os.path.isfile(configFile):
-    print('edit {}', configFile)
+    print('edit {}'.format(configFile))
     config = open(configFile, 'w')
     # default config data
     config.write(
@@ -60,10 +70,14 @@ if not os.path.exists(configFile) or not os.path.isfile(configFile):
     sys.exit()
 
 # 主配置
-configFilePath = dataPath + '/config.json'
-configFile = open(configFilePath, "r")
-configFileDict = json.loads(configFile.read())
-configFile.close()
+confFile = open(configFile, "r")
+configFileDict = json.loads(confFile.read())
+confFile.close()
+
+# keys
+kysFile = open(keysFile, 'r')
+keysFileDict = json.loads(kysFile.read())
+kysFile.close()
 
 # 获取各目录配置文件
 filenamesLock = threading.Lock()
@@ -88,10 +102,20 @@ def get_plugin_path(routerName, mdlName):
 
 # config.json路径
 def get_config_json():
-    return configFilePath
+    return configFile
 # config.json内容
 def get_config_dict():
     return configFileDict
+
+# keys.json路径
+def get_keys_json():
+    return keysFile
+# keys.json内容
+def get_keys_dict():
+    return keysFileDict
+# keys.json查询
+def search_keys_dict(field):
+    return keysFileDict.get(field, '')
 
 # 插件配置路径
 def get_plugin_config_json(plgName):
