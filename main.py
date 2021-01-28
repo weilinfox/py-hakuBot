@@ -132,6 +132,7 @@ def update_thread():
             hakuApi.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
             hakuPlg.link_modules(pluginDict)
             hakuCore.report.init_report(ADMINQID, ADMINGID)
+            hakuStatus.regest_router('__main__', {'start_time':time.time()})
             # 重载插件
             for md in pluginDict.keys():
                 if 'quit_plugin' in dir(pluginDict[md]):
