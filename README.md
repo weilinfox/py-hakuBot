@@ -6,6 +6,20 @@ hakuBot，利用go-cqhttp在龙芯和其他平台快速构建的qq机器人。
 
 可以基于go-cqhttp的http报文格式自主扩展，使hakuBot也可以响应其他自定义事件。通过两级插件方便扩展和删减插件：第一级为通过 ``post_type`` 判断插件类型，调用 ``hakuRouter`` 下的对应模块处理；第二级为第一级插件模块调用 ``plugins`` 下的对应包中的插件，包名即第一级插件的模块名。
 
+## 测试环境
+
+| 系统 | 架构 | Python版本 |
+|:---:|:---:|:--------:|
+|Fedora28 |mips64el |python3.6|
+|Arch Linux Arm |aarch64 |python3.9|
+|Arch Linux |x86_64 |python3.9|
+|Debian10 Buster |x86_64 |python3.7|
+|Windows10 |x86_64 |python3.7|
+
+运行hakuBot需要flask，可以运行 ``test_environment.py`` 检查环境是否具有所有所需模块。
+
+并没有过多考虑Linux以外的环境。Windows环境似乎没有发现什么bug，不过要注意环境变量的配置。
+
 ## 快速上手
 
 首次运行hakuBot会自动生成一个合法的 ``files`` 目录，其中包含了 ``keys.json`` ``config.json`` 两个初始配置文件。编辑初始配置文件后hakuBot即可与go-cqhttp正常通信。
@@ -13,6 +27,8 @@ hakuBot，利用go-cqhttp在龙芯和其他平台快速构建的qq机器人。
 ## 插件开发
 
 插件通常被放置在 ``plugins/message/`` 目录下。
+
+``plugins/message/`` 目录下的插件通过go-cqhttp接收到的消息来调用，如 ``ping`` 插件通过类似 ``.ping`` 的指令调用。其中指令前的前导符号可以在 ``config.json`` 中设置。
 
 ### 最简单的插件
 
@@ -98,6 +114,18 @@ import logging
 myLogger = logging.getLogger('hakuBot')
 ```
 
+## 升级出错
+
+hakuBot自带了升级插件 ``plugins/message/update.py`` ，可以通过go-cqhttp进行升级，消息类似 ``.update`` （前导符号可设置）。如果hakuBot在升级后出现错误导致无法正常调用插件，则需要向仓库push正确代码后手动干预再次升级，这可以通过 ``operate.py`` 实现。 ``operate.py`` 可以手动触发hakuBot对应的接口。
+
+手动调用升级示例如下：
+
+```python
+python3 operate.py UPDATE
+```
+
+它会自动读取hakuBot的配置并向其监听端口发送GET请求。
+
 ## 细节
 
 ### 主要模块和目录
@@ -141,3 +169,4 @@ myLogger = logging.getLogger('hakuBot')
 ```
 {'font': 0, 'message': '这是一个测试', 'message_id': 15945 'message_type': 'private', 'post_type': 'message', 'raw_message': '这是一个测试', 'self_id': 27505, 'sender': {'age': 0, 'nickname': '昵称', 'sex': 'unknown', 'user_id': 25218}, 'sub_type': 'friend', 'time': 16113, 'user_id': 25218}
 ```
+
