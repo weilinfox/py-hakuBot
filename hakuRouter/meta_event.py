@@ -183,7 +183,7 @@ def new_event(msgDict):
                     else:
                         groupTimes[grpDctK].append(msg)
         # 群日志
-        if timeFlag == 0:
+        if timeFlag == '0':
             for grpDctK in groupDateDict.keys():
                 if dateFlag in groupDateDict[grpDctK]['date']:
                     if not groupDctK in groupTimes:
@@ -205,7 +205,7 @@ def new_event(msgDict):
                     else:
                         userTimes[usrDctK].append(msg)
         # 个人日志
-        if timeFlag == 0:
+        if timeFlag == '0':
             for usrDctK in userDateDict.keys():
                 if dateFlag in userDateDict[usrDctK]['date']:
                     if not usrDctK in userTimes:
