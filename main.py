@@ -62,6 +62,8 @@ hakuApi.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
 hakuPlg.link_modules(pluginDict)
 hakuCore.report.init_report(ADMINQID, ADMINGID)
 
+hakuStatus.regest_router('__main__', {'start_time':time.time()})
+
 def clear_threadDict():
     # 清理threadDict
     global threadDict

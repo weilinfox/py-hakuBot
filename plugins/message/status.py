@@ -7,7 +7,10 @@ import time
 def main(msgDict):
     msgDct, msgTm = hakuData.status.get_status('message')
     metaDct, metaTm = hakuData.status.get_status('meta_event')
+    mainDct, mainTm = hakuData.status.get_status('__main__')
+    run_time = int(time.time()-mainDct['start_time'])
     ans = f'Current time: {time.asctime(time.gmtime(time.time() + 8 * 3600))}'
+    ans += f'\n\nUp time: {run_time//86400} days {(run_time%86400)//3600}:{(run_time%3600)//60}:{run_time%60}'
     ans += f'\n\nRouter message:\n{msgDct}'
     ans += f'\nLast Update: {time.asctime(time.gmtime(msgTm + 8 * 3600))}'
     ans += f'\n\nRouter meta_event:\n{metaDct}'
