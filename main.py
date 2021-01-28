@@ -46,6 +46,7 @@ hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
 hakuLog.init_flack_log_level(FLASKLOGLEVEL, FLASKCLOGLEVEL)
 logging.config.dictConfig(hakuLog.logDict)
 myLogger = logging.getLogger('hakuBot')
+dataMethod.build_logger()
 myLogger.info('logger init finished.')
 
 # 线程控制
@@ -121,6 +122,7 @@ def update_thread():
             callHaku.link_modules(pluginDict)
             hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
             hakuLog.init_flack_log_level(FLASKLOGLEVEL, FLASKCLOGLEVEL)
+            dataMethod.build_logger()
             hakuApi.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
             hakuPlg.link_modules(pluginDict)
             hakuCore.report.init_report(ADMINQID, ADMINGID)

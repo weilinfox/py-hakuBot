@@ -1,7 +1,7 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import os, sys, threading, json, csv
+import os, sys, threading, json, csv, logging
 import hakuData.log
 
 # 路径检测和初始化
@@ -9,14 +9,16 @@ mainPath = os.path.normpath(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 dataPath = mainPath + '/files'
 dataPath = os.path.normpath(dataPath)
 csvPath = dataPath + '/csv'
-csvFiles = {}
+csvFiles = set()
 sqlitePath = dataPath + '/sqlite'
-sqliteFiles = {}
+sqliteFiles = set()
 jsonPath = dataPath + '/json'
-jsonFiles = {}
+jsonFiles = set()
 configFile = dataPath + '/config.json'
 keysFile = dataPath + '/keys.json'
 logPath = dataPath + '/log'
+
+myLogger = None
 
 if not os.path.exists(dataPath):
     print('mkdir {}'.format(dataPath))
@@ -124,8 +126,12 @@ def get_plugin_config_json(plgName):
     filePath = "{}/{}".format(jsonPath, fileName)
     # print(jsonFiles)
     if not fileName in jsonFiles:
-        conf = open(filePath, "w")
-        conf.write(
+        if os.path.exists(filePath):
+            if myLogger: myLogger.error(f'{fileName} exists but not in jsonFiles.')
+            else: print(f'{fileName} exists but not in jsonFiles.')
+        else:
+            conf = open(filePath, "w")
+            conf.write(
 '''
 {
     "auth": {
@@ -137,9 +143,9 @@ def get_plugin_config_json(plgName):
     }
 }
 '''
-            )
-        conf.close()
-    jsonFiles.add(fileName)
+                )
+            conf.close()
+            jsonFiles.add(fileName)
     return filePath
 
 # csv文件操作
@@ -147,9 +153,9 @@ csvFileLock = threading.Lock()
 csvUpdateSet = set() # csv update一次性标志
 def touch_csv_file(fileName, headers):
     global csvFiles, csvFileLock
-    if fileName in csvFiles:
-        return 1
     filePath = f'{csvPath}/{fileName}'
+    if fileName in csvFiles or os.path.exists(filePath):
+        return 1
     with csvFileLock:
         csvf = open(filePath, 'w', newline='')
         writer = csv.DictWriter(csvf, headers)
@@ -161,7 +167,10 @@ def read_dict_csv_file(fileName, headers):
     global csvFiles, csvFileLock
     filePath = f'{csvPath}/{fileName}'
     if not fileName in csvFiles:
-        touch_csv_file(fileName, headers)
+        resp = touch_csv_file(fileName, headers)
+        if resp:
+            if myLogger: myLogger.error(f'Tough csv file {filePath} failed.')
+            else: print(f'Tough csv file {filePath} failed.')
         return []
     else:
         with csvFileLock:
@@ -196,6 +205,10 @@ def get_csv_update_flag(fileName):
             csvUpdateSet.remove(fileName)
             flag = True
     return flag
+
+def build_logger():
+    global myLogger
+    myLogger = logging.getLogger('hakuBot')
 
 get_filenames()
 hakuData.log.init_log_path(logPath)
