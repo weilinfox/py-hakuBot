@@ -3,6 +3,6 @@
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
 import flask
-import time, json, importlib, threading, os, requests, logging, json, sys, csv, socket
+import time, json, importlib, threading, os, requests, logging, json, sys, csv, socket, traceback
 
 print('No errors.')

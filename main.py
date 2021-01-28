@@ -3,7 +3,7 @@
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
 import flask
-import time, json, importlib, threading, os
+import time, json, importlib, threading, os, traceback
 import logging, logging.config
 import hakuData.log as hakuLog
 import hakuData.method as dataMethod
@@ -114,12 +114,16 @@ def update_thread():
         # update逻辑
         with threadLock:
             myLogger.debug('start update process')
+            errMsg1 = ''
+            errMsg2 = ''
+            errMsg3 = ''
             # 重载主要模块
             for md in modules:
                 try:
                     importlib.reload(eval(md))
                 except:
                     myLogger.exception('RuntimeError')
+                    errMsg1 = traceback.format_exc()
             # 重新初始化module
             callHaku.link_modules(pluginDict)
             hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
@@ -137,12 +141,23 @@ def update_thread():
                         pluginDict[md].quit_plugin()
                     except:
                         myLogger.exception('RuntimeError')
+                        errMsg2 = traceback.format_exc()
                 try:
                     myLogger.debug(f'Reload {md}')
                     pluginDict[md] = importlib.reload(pluginDict[md])
                 except:
                     myLogger.exception('RuntimeError')
-
+                    errMsg3 = traceback.format_exc()
+            # 错误上报
+            if errMsg1:
+                hakuCore.report.report('Error occored while reloading module:')
+                hakuCore.report.report(errMsg1)
+            if errMsg2:
+                hakuCore.report.report('Error occored while quit plugin:')
+                hakuCore.report.report(errMsg2)
+            if errMsg3:
+                hakuCore.report.report('Error occored while reloading plugin:')
+                hakuCore.report.report(errMsg3)
     threadCount -= 1
 
 # 事件触发
