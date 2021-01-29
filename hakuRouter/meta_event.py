@@ -186,7 +186,7 @@ def new_event(msgDict):
         if timeFlag == '0':
             for grpDctK in groupDateDict.keys():
                 if dateFlag in groupDateDict[grpDctK]['date']:
-                    if not groupDctK in groupTimes:
+                    if not grpDctK in groupTimes:
                         groupTimes[grpDctK] = []
                         groupComs[grpDctK] = []
                     for msg in groupDateDict[grpDctK][dateFlag]:
