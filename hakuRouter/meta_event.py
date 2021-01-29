@@ -14,6 +14,8 @@ configDict = hakuData.method.get_config_dict()
 serverConfig = configDict.get('server_config', {})
 hakuConfig = configDict.get('haku_config', {})
 INDEX = hakuConfig.get('index', '.')
+ADMINQQ = hakuConfig.get('admin_qq', -1)
+ADMINGRP = hakuConfig.get('admin_group', -1)
 
 meta_msg_event = {
     'message':'',
@@ -34,6 +36,11 @@ timeDelay = 0
 # 注册自己
 hakuData.status.regest_router('meta_event', {'event_frequency':0})
 
+# 循环指令 {'command':{'message':'msg', 'interval':0, 'last_call':0}, ...}
+regularComLock = threading.Lock()
+regularComFile = 'meta_event.regular_commands.csv'
+regularComDict = dict()
+
 # 用户数据 {group_id:{'time':{time1, time2, ...}, time1:['msg1', ...], time2:['msg2', ...], ...}, ...}
 userTimeLock = threading.Lock()
 userTimeFile = 'meta_event.user_time_table.csv'
@@ -49,6 +56,26 @@ groupDateFile = 'meta_event.group_schedual.csv'
 groupDateDict = dict()
 updateTime = int(time.time())
 processTimeNow = ''
+
+def load_regular_commands():
+    global regularComDict
+    myLogger.debug('Loading regular commands')
+    with regularComLock:
+        rawDict = hakuData.method.read_dict_csv_file(regularComFile, ['command', 'interval'])
+    for i in range(0, len(rawDict)):
+        try:
+            rawDict[i]['interval'] = int(rawDict[i]['interval'])
+        except ValueError:
+            myLogger.warning(f'Inlegal interval in {regularComFile}: {rawDict[i]["interval"]}')
+            rawDict[i]['interval'] = 60
+        except:
+            myLogger.exception('RuntimeError')
+        else:
+            if rawDict[i]['interval'] == 0: rawDict[i]['interval'] = 1
+            if rawDict[i]['command'][0] == INDEX and len(rawDict[i]['command']) > 1:
+                com = list(rawDict[i]['command'].split())[0]
+                regularComDict[com] = {'message':rawDict[i]['command'], 'interval':rawDict[i]['interval']*60, 'last_call':0}
+    myLogger.debug(f'Finish loading regular commands. {regularComDict}')
 
 def load_group_time_csv():
     global groupTimeDict
@@ -152,6 +179,8 @@ def new_event(msgDict):
     if timeNow - updateTime >= 60*15:
         updateTime = timeNow
         myLogger.debug('Ask whether need to update time table.')
+        if hakuData.method.get_csv_update_flag(regularComFile):
+            load_regular_commands()
         if hakuData.method.get_csv_update_flag(userTimeFile):
             load_user_time_csv()
         if hakuData.method.get_csv_update_flag(groupTimeFile):
@@ -263,7 +292,24 @@ def new_event(msgDict):
                     modName = list(msg[1:].split())[0]
                     hakuCore.plugin.run_module(msgEvent, 'message', modName)
 
+    # 重复指令
+    timeNow = time.time()
+    msgEvent = meta_msg_event.copy()
+    if ADMINQQ > 99999:
+        msgEvent['user_id'] = ADMINQQ
+        msgEvent['message_type'] = 'private'
+    if ADMINGRP > 99999:
+        msgEvent['group_id'] = ADMINGRP
+        msgEvent['message_type'] = 'group'
+    for com in regularComDict.keys():
+        if timeNow - regularComDict[com]['last_call'] >= regularComDict[com]['interval']:
+            msgEvent['message'] = msgEvent['raw_message'] = regularComDict[com]['message']
+            hakuCore.plugin.run_module(msgEvent, 'message', com[1:])
+            regularComDict[com]['last_call'] = timeNow
+
 # 数据初始化
+load_regular_commands()
+
 load_group_time_csv()
 load_group_date_csv()
 load_user_time_csv()
