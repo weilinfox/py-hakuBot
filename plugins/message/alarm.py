@@ -28,20 +28,20 @@ for dct in hakuData.method.read_dict_csv_file(userTimeFile, ['user_id', 'time', 
     else:
         userTimeDict[dct['user_id']] = [{'time':dct['time'], 'message':dct['message']}]
 for dct in hakuData.method.read_dict_csv_file(groupTimeFile, ['group_id', 'time', 'message']):
-    if dct['group_id'] in userTimeDict:
-        userTimeDict[dct['group_id']].append({'time':dct['time'], 'message':dct['message']})
+    if dct['group_id'] in groupTimeDict:
+        groupTimeDict[dct['group_id']].append({'time':dct['time'], 'message':dct['message']})
     else:
-        userTimeDict[dct['group_id']] = [{'time':dct['time'], 'message':dct['message']}]
+        groupTimeDict[dct['group_id']] = [{'time':dct['time'], 'message':dct['message']}]
 for dct in hakuData.method.read_dict_csv_file(userDateFile, ['user_id', 'date', 'message']):
-    if dct['user_id'] in userTimeDict:
-        userTimeDict[dct['user_id']].append({'date':dct['date'], 'message':dct['message']})
+    if dct['user_id'] in userScheDict:
+        userScheDict[dct['user_id']].append({'date':dct['date'], 'message':dct['message']})
     else:
-        userTimeDict[dct['user_id']] = [{'date':dct['date'], 'message':dct['message']}]
+        userScheDict[dct['user_id']] = [{'date':dct['date'], 'message':dct['message']}]
 for dct in hakuData.method.read_dict_csv_file(groupDateFile, ['group_id', 'date', 'message']):
-    if dct['group_id'] in userTimeDict:
-        userTimeDict[dct['group_id']].append({'date':dct['date'], 'message':dct['message']})
+    if dct['group_id'] in groupScheDict:
+        groupScheDict[dct['group_id']].append({'date':dct['date'], 'message':dct['message']})
     else:
-        userTimeDict[dct['group_id']] = [{'date':dct['date'], 'message':dct['message']}]
+        groupScheDict[dct['group_id']] = [{'date':dct['date'], 'message':dct['message']}]
 
 print(userTimeDict)
 print(groupTimeDict)
