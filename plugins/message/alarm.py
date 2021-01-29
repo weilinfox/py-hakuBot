@@ -67,9 +67,9 @@ message: 文字信息，可以包含小白支持的命令
                     lenth = len(userTimeDict[qqid])
                     retMsg = f'现在小白记录了{lenth}条记录:'
                     if lenth > 5: lenth = 5
-                    retMsg += '\ntime message'
+                    retMsg += '\nline time message'
                     for i in range(0, lenth):
-                        retMsg += f"\n{userTimeDict[qqid][i]['time']} {userTimeDict[qqid][i]['message']}"
+                        retMsg += f"\n{i} {userTimeDict[qqid][i]['time']} {userTimeDict[qqid][i]['message']}"
                 else:
                     retMsg = '小白这里好像没有你的记录欸'
             elif msg[2] == 'add' and len(msg) > 4:
@@ -82,9 +82,9 @@ message: 文字信息，可以包含小白支持的命令
                     lenth = len(userScheDict[qqid])
                     retMsg = f'现在小白记录了{lenth}条记录:'
                     if lenth > 5: lenth = 5
-                    retMsg += '\ndate message'
+                    retMsg += '\nline date message'
                     for i in range(0, lenth):
-                        retMsg += f"\n{userScheDict[qqid][i]['date']} {userScheDict[qqid][i]['message']}"
+                        retMsg += f"\n{i} {userScheDict[qqid][i]['date']} {userScheDict[qqid][i]['message']}"
                 else:
                     retMsg = '小白这里好像没有你的记录欸'
             elif msg[2] == 'add' and len(msg) > 4:
@@ -99,9 +99,9 @@ message: 文字信息，可以包含小白支持的命令
                     lenth = len(groupTimeDict[qqid])
                     retMsg = f'现在小白记录了{lenth}条记录:'
                     if lenth > 5: lenth = 5
-                    retMsg += '\ntime message'
+                    retMsg += '\nline time message'
                     for i in range(0, lenth):
-                        retMsg += f"\n{groupTimeDict[qqid][i]['time']} {groupTimeDict[qqid][i]['message']}"
+                        retMsg += f"\n{i} {groupTimeDict[qqid][i]['time']} {groupTimeDict[qqid][i]['message']}"
                 else:
                     retMsg = '小白这里好像没有你的记录欸'
             elif msg[2] == 'add' and len(msg) > 4:
@@ -114,9 +114,9 @@ message: 文字信息，可以包含小白支持的命令
                     lenth = len(groupScheDict[qqid])
                     retMsg = f'现在小白记录了{lenth}条记录:'
                     if lenth > 5: lenth = 5
-                    retMsg += '\ndate message'
+                    retMsg += '\nline date message'
                     for i in range(0, lenth):
-                        retMsg += f"\n{groupScheDict[qqid][i]['date']} {groupScheDict[qqid][i]['message']}"
+                        retMsg += f"\n{i} {groupScheDict[qqid][i]['date']} {groupScheDict[qqid][i]['message']}"
                 else:
                     retMsg = '小白这里好像没有你的记录欸'
             elif msg[2] == 'add' and len(msg) > 4:
