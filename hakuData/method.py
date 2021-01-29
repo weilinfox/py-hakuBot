@@ -197,6 +197,19 @@ def write_dict_csv_file(fileName, headers, fileDict):
         csvUpdateSet.add(fileName)
     return 0
 
+def write_dict_csv_file_add(fileName, headers, fileDict):
+    global csvFiles, csvFileLock, csvUpdateSet
+    if not fileName in csvFiles:
+        raise FileNotFoundError(f'No such csv file: {fileName}')
+    filePath = f'{csvPath}/{fileName}'
+    with csvFileLock:
+        csvf = open(filePath, 'a', newline='')
+        writer = csv.DictWriter(csvf, headers)
+        for dct in fileDict:
+            writer.writerow(dct)
+        csvf.close()
+    return 0
+
 def get_csv_update_flag(fileName):
     global csvUpdateSet, csvFileLock
     flag = False
