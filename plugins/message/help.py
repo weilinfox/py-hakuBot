@@ -22,6 +22,7 @@ usage: help [options]
             if code == 0:
                 ans = '''通用指令:
 alarm
+baidu
 bc
 echo
 forecast
