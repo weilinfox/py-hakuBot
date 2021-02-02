@@ -17,6 +17,7 @@ def main(msgDict):
                 if timeNow - statusDict['status'][s]['time'] > 30.0:
                     continue
                 ans += f'\n{s}'
+            ans += f"\n上报错误总计: {statusDict['errors']}"
         else:
             ans += '\n没有查询到 haku-manager 的信息'
     else:
