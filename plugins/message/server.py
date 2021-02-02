@@ -37,7 +37,7 @@ fan status: {myDict['status']['temp']['fan_status']}
 cpu cores: {myDict['status']['cpu']['cpu_cores']}
 load average: {myDict['status']['cpu']['load_average']}
 wa: {myDict['status']['cpu']['wa']}
--disk infpo-
+-disk info-
 bi: {myDict['status']['disk']['bi']}
 bo: {myDict['status']['disk']['bo']}
 -memory info-
