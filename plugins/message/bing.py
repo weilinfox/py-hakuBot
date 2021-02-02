@@ -25,7 +25,7 @@ def main(msgDict):
         return '小白会试着从bing搜索~'
     wd = list(msgDict['message'].split(' ', 1))[1].strip()
     #print(wd)
-    params['q'] = wd.replace(' ', '+')
+    params['q'] = wd
     try:
         resp = requests.get(url=url, params=params, headers=headers)
     except:
@@ -57,4 +57,4 @@ def main(msgDict):
 
 if __name__ == "__main__":
     msg = input('input msg: ')
-    print(main({'message':msg}))
+    print(main({'message':'.bing '+msg}))
