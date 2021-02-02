@@ -29,11 +29,15 @@ def main(msgDict):
     if resp.status_code == 200:
         pageText = resp.text
         pageList = list(pageText.split('table', pageText.count('table')))
+        getResult = False
         for s in pageList:
             if 'class="result"' in s:
-                res = re.findall(r'href="(.*?)"', s)[0].replace('<em>','').replace('</em>','')
+                res = re.findall(r'href="(.*?)"', s)[0]
                 title = re.findall(r'>\s+(.*?)\s+</a>', s)[0].replace('<em>','').replace('</em>','')
                 if res and title:
                     hakuCore.cqhttpApi.reply_msg(msgDict, f'[CQ:share,url={res},title={title}]')
+                    getResult = True
+        if not getResult:
+            return '啊嘞嘞？好像啥也没有找到欸。'
     else:
         return '啊嘞嘞？一定是百度炸了不可能是小白！'
