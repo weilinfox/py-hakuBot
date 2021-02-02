@@ -15,3 +15,6 @@ def new_event(msgDict):
     if msgDict['notice_type'] == 'group_increase':
         greetMsg = f'欢迎欢迎，进了群就是一家人了~\n{INDEX}help 查看给小白的指示哦'
         hakuCore.cqhttpApi.send_group_msg(msgDict['group_id'], '[CQ:at,qq=' + str(msgDict['user_id']) + ']\n' + greetMsg)
+    elif msgDict['notice_type'] == 'lucky_king':
+        greatMsg = '运气王出现了'
+        hakuCore.cqhttpApi.send_group_msg(msgDict['group_id'], '[CQ:at,qq=' + str(msgDict['target_id']) + ']\n' + greetMsg)
