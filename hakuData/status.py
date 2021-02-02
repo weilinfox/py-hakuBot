@@ -18,10 +18,11 @@ def regest_router(routerName, initDict):
     statusDict[routerName] = initDict
     refreshTime[routerName] = time.time()
 
-def refresh_status(routerName, newDict):
+def refresh_status(routerName, newDict=None):
     global statusDict, refreshTime
-    myLogger.debug(f'{routerName} refreshed with dict {newDict}')
-    statusDict[routerName] = newDict
+    if newDict: myLogger.debug(f'{routerName} refreshed with dict {newDict}')
+    else: myLogger.debug(f'{routerName} refreshed time')
+    if newDict: statusDict[routerName] = newDict
     refreshTime[routerName] = time.time()
 
 def get_status(routerName):
