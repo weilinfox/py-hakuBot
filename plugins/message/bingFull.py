@@ -38,7 +38,7 @@ def main(msgDict):
             descEle = item.getElementsByTagName('description')[0]
             desc = descEle.childNodes[0].data
             # print(title, link, desc)
-            #hakuCore.cqhttpApi.reply_msg(msgDict, f"[CQ:reply,id={msgDict['message_id']}][CQ:at,qq={msgDict['user_id']}]\n{desc}")
+            hakuCore.cqhttpApi.reply_msg(msgDict, f"[CQ:reply,id={msgDict['message_id']}][CQ:at,qq={msgDict['user_id']}]\n{desc}")
             hakuCore.cqhttpApi.reply_msg(msgDict, f"[CQ:share,url={link},title={title}]")
             itemCount += 1
             if itemCount == 2: break;
