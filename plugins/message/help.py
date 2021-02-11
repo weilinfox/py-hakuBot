@@ -24,6 +24,8 @@ usage: help [options]
 alarm
 baidu
 bc
+bing
+bingFull
 echo
 forecast
 music

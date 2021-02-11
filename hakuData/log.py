@@ -14,7 +14,7 @@ logDict = {
             'formatter': 'default',
             'filename': './hakuBot.log',
             'maxBytes': 1000000,
-            'backupCount': 16,
+            'backupCount': 32,
             'level': 'DEBUG',
             'delay': False
         },
@@ -28,7 +28,7 @@ logDict = {
             'formatter': 'default',
             'filename': './hakuBot.log',
             'maxBytes': 1000000,
-            'backupCount': 16,
+            'backupCount': 32,
             'level': 'DEBUG',
             'delay': False
         },
