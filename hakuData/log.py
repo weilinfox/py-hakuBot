@@ -14,7 +14,7 @@ logDict = {
             'formatter': 'default',
             'filename': './hakuBot.log',
             'maxBytes': 1000000,
-            'backupCount': 32,
+            'backupCount': 64,
             'level': 'DEBUG',
             'delay': False
         },
@@ -26,9 +26,9 @@ logDict = {
         'flask_file': {
             'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'default',
-            'filename': './hakuBot.log',
+            'filename': './hakuBot_flask.log',
             'maxBytes': 1000000,
-            'backupCount': 32,
+            'backupCount': 16,
             'level': 'DEBUG',
             'delay': False
         },
