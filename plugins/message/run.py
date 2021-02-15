@@ -5,13 +5,15 @@ import hakuData.method
 import logging
 import requests, json
 
+#this line is for qpython
 #requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = "TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256:TLS13-AES-256-GCM-SHA384:ECDHE:!COMPLEMENTOFDEFAULT"
 
 myLogger = logging.getLogger('hakuBot')
 GLOTKEY = hakuData.method.search_keys_dict('glot_key')
 
 def glotLang():
-    langList = requests.get(url='https://run.glot.io/languages').json()
+    # to fix SSL Certificate Error
+    langList = requests.get(url='https://run.glot.io/languages', verify=False).json()
     langDict = {}
     for dct in langList:
         langDict[dct['name']] = dct['url'] + '/latest'
@@ -54,7 +56,7 @@ def main(msgDict):
                     if not flag: flag = 1
                 if spcont == 2: break
             content = msgDict['raw_message'].strip()[pos:]
-            
+
             try :
                 LANG = glotLang()
             except:
@@ -78,7 +80,8 @@ def main(msgDict):
                             "content": content
                         }]
                     }
-                    resp = requests.post(url=url, headers=headers, json=data).json()
+                    # to fix SSL Certificate Error
+                    resp = requests.post(url=url, headers=headers, json=data, verify=False).json()
                     if len(resp['stdout']):
                         ans += 'stdout:\n' + resp['stdout']
                     if len(resp['stderr']):
@@ -95,5 +98,5 @@ def main(msgDict):
 
     return ans
 
-    
+
 #print(main({'raw_message':input()})) 
