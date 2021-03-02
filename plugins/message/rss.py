@@ -82,8 +82,10 @@ test 检测订阅是否正常
                             break
                         elif timeNow - time.mktime(feedDict.entries[i].updated_parsed) + time.altzone > 300:
                             break
-                        newMsg = f'{feedDict.entries[i].title}\n{feedDict.entries[i].link}\n摘要: {feedDict.entries[i].summary}'
-                        if not hakuBlock.has_block_word(newMsg): feedMsg.append(newMsg)
+                        newMsg = f'{feedDict.entries[i].title}\n摘要: {feedDict.entries[i].summary}'
+                        if not hakuBlock.has_block_word(newMsg):
+                            feedMsg.append(newMsg)
+                            feedMsg.append(feedDict.entries[i].link)
                     latestMsg[lnk]['title'] = feedDict.entries[0].title
                     latestMsg[lnk]['link'] = feedDict.entries[0].link
                 else:
@@ -91,8 +93,10 @@ test 检测订阅是否正常
                     latestMsg[lnk]['link'] = feedDict.entries[0].link
                     # print(timeNow - time.mktime(feedDict.entries[0].updated_parsed) + time.altzone)
                     if timeNow - time.mktime(feedDict.entries[0].updated_parsed) + time.altzone <= 300:
-                        newMsg = f'{feedDict.entries[0].title}\n{feedDict.entries[0].link}\n摘要: {feedDict.entries[0].summary}'
-                        if not hakuBlock.has_block_word(newMsg): feedMsg.append(newMsg)
+                        newMsg = f'{feedDict.entries[0].title}\n摘要: {feedDict.entries[0].summary}'
+                        if not hakuBlock.has_block_word(newMsg):
+                            feedMsg.append(newMsg)
+                            feedMsg.append(feedDict.entries[0].link)
                     # print(feedMsg)
             for qid in linkUser.get(lnk, []):
                 for msg in feedMsg:
