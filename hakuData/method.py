@@ -151,6 +151,10 @@ def get_plugin_config_json(plgName):
 # csv文件操作
 csvFileLock = threading.Lock()
 csvUpdateSet = set() # csv update一次性标志
+
+def get_csv_file_by_name(router, name):
+    return f"{router}.{name}.csv"
+
 def touch_csv_file(fileName, headers):
     global csvFiles, csvFileLock
     filePath = f'{csvPath}/{fileName}'

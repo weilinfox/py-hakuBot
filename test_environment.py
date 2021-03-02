@@ -3,6 +3,7 @@
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
 import flask
+import feedparser
 import time
 import json
 import importlib
