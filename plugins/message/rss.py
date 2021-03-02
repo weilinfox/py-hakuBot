@@ -128,19 +128,21 @@ test 检测订阅是否正常
                 userLink = groupDict[str(msgDict['group_id'])]
             else:
                 return '小白这里没有你的记录欸'
-        ans = '下面是小白的测试结果:'
+        ans = 'No.  状态'
+        pos = 0
         for lnk in userLink:
             feedDict = feedparser.parse(lnk)
             try:
                 if feedDict.status == 200:
                     if len(feedDict.entries):
-                        ans += f'\n*****\n"{lnk}" 正常'
+                        ans += f'\n{pos} 正常'
                     else:
-                        ans += f'\n*****\n"{lnk}" 似乎不是一个推送链接'
+                        ans += f'\n{pos} 似乎不是一个推送链接'
                 else:
-                    ans += f'\n*****\n"{lnk}" 发现错误:{feedDict.status}'
+                    ans += f'\n{pos} 发现错误:{feedDict.status}'
             except:
-                ans += f'\n*****\n"{lnk}" 似乎不是一个正常的链接'
+                ans += f'\n{pos} 似乎不是一个正常的链接'
+            pos += 1
         return ans
     elif com[1] == 'add':
         if len(com) < 3: return '小白不知道你要添加什么 [CQ:face,id=176]'
