@@ -134,13 +134,13 @@ test 检测订阅是否正常
             try:
                 if feedDict.status == 200:
                     if len(feedDict.entries):
-                        ans += f'*****\n链接 {lnk} 正常'
+                        ans += f'\n*****\n链接 {lnk} 正常'
                     else:
-                        ans += f'*****\\n链接 {lnk} 似乎不是一个推送链接'
+                        ans += f'\n*****\n链接 {lnk} 似乎不是一个推送链接'
                 else:
-                    ans += f'*****\\n链接 {lnk} 发现错误:{feedDict.status}'
+                    ans += f'\n*****\n链接 {lnk} 发现错误:{feedDict.status}'
             except:
-                ans += f'*****\\n {lnk} 似乎不是一个正常的链接'
+                ans += f'\n*****\n {lnk} 似乎不是一个正常的链接'
         return ans
     elif com[1] == 'add':
         if len(com) < 3: return '小白不知道你要添加什么 [CQ:face,id=176]'
