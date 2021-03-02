@@ -82,7 +82,7 @@ test 检测订阅是否正常
                             break
                         elif timeNow - time.mktime(feedDict.entries[i].updated_parsed) + time.altzone > 300:
                             break
-                        newMsg = f'{feedDict.entries[i].title}\n链接: {feedDict.entries[i].link}\n摘要: {feedDict.entries[i].summary}'
+                        newMsg = f'{feedDict.entries[i].title}\n{feedDict.entries[i].link}\n摘要: {feedDict.entries[i].summary}'
                         if not hakuBlock.has_block_word(newMsg): feedMsg.append(newMsg)
                     latestMsg[lnk]['title'] = feedDict.entries[0].title
                     latestMsg[lnk]['link'] = feedDict.entries[0].link
@@ -91,7 +91,7 @@ test 检测订阅是否正常
                     latestMsg[lnk]['link'] = feedDict.entries[0].link
                     # print(timeNow - time.mktime(feedDict.entries[0].updated_parsed) + time.altzone)
                     if timeNow - time.mktime(feedDict.entries[0].updated_parsed) + time.altzone <= 300:
-                        newMsg = f'{feedDict.entries[0].title}\n链接: {feedDict.entries[0].link}\n摘要: {feedDict.entries[0].summary}'
+                        newMsg = f'{feedDict.entries[0].title}\n{feedDict.entries[0].link}\n摘要: {feedDict.entries[0].summary}'
                         if not hakuBlock.has_block_word(newMsg): feedMsg.append(newMsg)
                     # print(feedMsg)
             for qid in linkUser.get(lnk, []):
@@ -134,13 +134,13 @@ test 检测订阅是否正常
             try:
                 if feedDict.status == 200:
                     if len(feedDict.entries):
-                        ans += f'\n*****\n链接 {lnk} 正常'
+                        ans += f'\n*****\n"{lnk}" 正常'
                     else:
-                        ans += f'\n*****\n链接 {lnk} 似乎不是一个推送链接'
+                        ans += f'\n*****\n"{lnk}" 似乎不是一个推送链接'
                 else:
-                    ans += f'\n*****\n链接 {lnk} 发现错误:{feedDict.status}'
+                    ans += f'\n*****\n"{lnk}" 发现错误:{feedDict.status}'
             except:
-                ans += f'\n*****\n {lnk} 似乎不是一个正常的链接'
+                ans += f'\n*****\n"{lnk}" 似乎不是一个正常的链接'
         return ans
     elif com[1] == 'add':
         if len(com) < 3: return '小白不知道你要添加什么 [CQ:face,id=176]'
