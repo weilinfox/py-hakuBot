@@ -67,7 +67,7 @@ test 检测订阅是否正常
             try:
                 rssText = requests.get(lnk, timeout=10).text
             except:
-                feedDict = {'entries': []}
+                feedDict = feedparser.parse('')
             else:
                 feedDict = feedparser.parse(rssText)
             feedMsg = list()
