@@ -142,9 +142,9 @@ test 检测订阅是否正常
         pos = 0
         for lnk in userLink:
             try:
-                rssText = requests.get(lnk, timeout=10).text
-                feedDict = feedparser.parse(rssText)
-                if feedDict.status == 200:
+                rssResp = requests.get(lnk, timeout=10)
+                feedDict = feedparser.parse(rssResp.text)
+                if rssResp.status_code == 200:
                     if feedDict.entries:
                         ans += f'\n{pos} 正常'
                     else:
