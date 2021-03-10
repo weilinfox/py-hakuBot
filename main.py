@@ -98,6 +98,7 @@ def new_thread(msgDict):
             myLogger.debug('release threadLock')
             threadLock.release()
     clear_threadDict()
+    myLogger.debug(f'{threadCount} threads are running currently')
 
 def update_thread():
     global updateLock, threadCount, threadLock
@@ -107,7 +108,7 @@ def update_thread():
         return
     # update锁 期间不允许更多线程进入
     with updateLock:
-        myLogger.debug('wait for threads')
+        myLogger.debug(f'Waiting for {threadCount} threads...')
         # 防止死锁?
         if threadCount == 1 and threadLock.locked():
             threadLock.release()
