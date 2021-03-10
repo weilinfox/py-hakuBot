@@ -8,6 +8,7 @@
 import time
 import requests
 import feedparser
+import re
 import threading
 import hakuCore.cqhttpApi as hakuApi
 import hakuData.method as hakuMethod
@@ -63,7 +64,12 @@ test 检测订阅是否正常
 '''
     if com[1] == 'send':
         for lnk in latestMsg.keys():
-            feedDict = feedparser.parse(lnk)
+            try:
+                rssText = requests.get(lnk, timeout=10).text
+            except:
+                feedDict = {'entries': []}
+            else:
+                feedDict = feedparser.parse(rssText)
             feedMsg = list()
             if len(feedDict.entries) == 0:
                 if lnk in errorLink:
@@ -95,7 +101,7 @@ test 检测订阅是否正常
                     if timeNow - time.mktime(feedDict.entries[0].updated_parsed) + time.altzone <= 300:
                         newMsg = f'{feedDict.entries[0].title}\n摘要: {feedDict.entries[0].summary}'
                         if not hakuBlock.has_block_word(newMsg):
-                            feedMsg.append(newMsg.replace(feedDict.entries[0].link, ''))
+                            feedMsg.append(re.sub(r'<[\s\S]+?>', '', newMsg.replace(feedDict.entries[0].link, '')))
                             feedMsg.append(feedDict.entries[0].link)
                     # print(feedMsg)
             for qid in linkUser.get(lnk, []):
@@ -135,17 +141,18 @@ test 检测订阅是否正常
         ans = 'No.  状态'
         pos = 0
         for lnk in userLink:
-            feedDict = feedparser.parse(lnk)
             try:
+                rssText = requests.get(lnk, timeout=10).text
+                feedDict = feedparser.parse(rssText)
                 if feedDict.status == 200:
-                    if len(feedDict.entries):
+                    if feedDict.entries:
                         ans += f'\n{pos} 正常'
                     else:
                         ans += f'\n{pos} 似乎不是一个推送链接'
                 else:
                     ans += f'\n{pos} 发现错误:{feedDict.status}'
             except:
-                ans += f'\n{pos} 似乎不是一个正常的链接'
+                ans += f'\n{pos} 不能正常推送'
             pos += 1
         return ans
     elif com[1] == 'add':
