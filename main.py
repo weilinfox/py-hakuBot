@@ -136,6 +136,7 @@ def update_thread():
             hakuCore.report.init_report(ADMINQID, ADMINGID)
             hakuStatus.regest_router('__main__', {'start_time':startTime})
             # 重载插件
+            delPlugin = list()
             for md in pluginDict.keys():
                 if 'quit_plugin' in dir(pluginDict[md]):
                     try:
@@ -148,6 +149,9 @@ def update_thread():
                 try:
                     myLogger.debug(f'Reload {md}')
                     pluginDict[md] = importlib.reload(pluginDict[md])
+                except ModuleNotFoundError:
+                    myLogger.debug(f'Find one plugin deleted during update: {md}')
+                    delPlugin.append(md)
                 except:
                     myLogger.exception('RuntimeError')
                     errMsg3 = traceback.format_exc()
@@ -161,6 +165,9 @@ def update_thread():
             if errMsg3:
                 hakuCore.report.report('Error occored while reloading plugin:')
                 hakuCore.report.report(errMsg3)
+            # 删除不存在的plugin
+            for md in delPlugin:
+                pluginDict.pop(md)
     threadCount -= 1
 
 # 事件触发
