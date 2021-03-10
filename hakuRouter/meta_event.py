@@ -304,8 +304,8 @@ def new_event(msgDict):
     for com in regularComDict.keys():
         if timeNow - regularComDict[com]['last_call'] >= regularComDict[com]['interval']:
             msgEvent['message'] = msgEvent['raw_message'] = regularComDict[com]['message']
-            hakuCore.plugin.run_module(msgEvent, 'message', com[1:])
             regularComDict[com]['last_call'] = timeNow
+            hakuCore.plugin.run_module(msgEvent, 'message', com[1:])
 
 # 数据初始化
 load_regular_commands()
