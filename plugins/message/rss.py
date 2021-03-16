@@ -90,7 +90,7 @@ test 检测订阅是否正常
                             break
                         newMsg = f'{feedDict.entries[i].title}\n摘要: {feedDict.entries[i].summary}'
                         if not hakuBlock.has_block_word(newMsg):
-                            feedMsg.append(newMsg.replace(feedDict.entries[i].link, ''))
+                            feedMsg.append(re.sub(r'<[\s\S]+?>', '', newMsg.replace(feedDict.entries[i].link, '')))
                             feedMsg.append(feedDict.entries[i].link)
                     latestMsg[lnk]['title'] = feedDict.entries[0].title
                     latestMsg[lnk]['link'] = feedDict.entries[0].link
