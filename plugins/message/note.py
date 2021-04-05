@@ -7,7 +7,7 @@ def main (msgDict):
     global usrDict
     req = list(msgDict['raw_message'].split(' ', 1))
     if (len(req) == 1):
-        if usrDict.count(msgDict['user_id']):
+        if usrDict.get(msgDict['user_id']):
             return usrDict[msgDict['user_id']]
         else:
             return "log用于简单的备忘，然后你好像没有告诉过小白什么欸~"
