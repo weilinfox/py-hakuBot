@@ -20,7 +20,7 @@ textFiles = ['txt', 'md', 'csv', 'sh',
              's', 'S', 'v', 'vhd', 'vhdl',
              'php', 'html', 'css', 'jsp',
              'json', 'hjson', 'xml', 'yaml']
-pastebinUrl = 'https://fars.ee/u'
+pastebinUrl = 'https://fars.ee/'
 pastebinHeaders = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 pastebinJson = {'content': '', 'filename': ''}
 def check_upload_file(fileType, fileName, fileLink):
@@ -41,6 +41,13 @@ def check_upload_file(fileType, fileName, fileLink):
                                          json = myJson,
                                          timeout = (1,10)
                                          )
+                '''
+                pasteRet = requests.post(url = pastebinUrl + 'u',
+                                         headers = pastebinHeaders,
+                                         json = {'content': pasteRet.json()['url']},
+                                         timeout = (1,10)
+                                         )
+                '''
             except:
                 pass
             else:
