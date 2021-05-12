@@ -1,7 +1,7 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import logging, time, threading
+import logging, time, threading, requests
 import hakuCore.cqhttpApi
 import hakuData.method
 import hakuCore.report
@@ -13,6 +13,41 @@ hakuConfig = configDict.get('haku_config', {})
 INDEX = hakuConfig.get('index', '.')
 
 myLogger = logging.getLogger('hakuBot')
+
+textFiles = ['txt', 'md', 'csv', 'sh',
+             'py', 'java', 'kt', 'go', 'cs',
+             'c', 'cpp', 'cxx', 'h', 'hpp', 'cu',
+             's', 'S', 'v', 'vhd', 'vhdl',
+             'php', 'html', 'css', 'jsp',
+             'json', 'hjson', 'xml', 'yaml']
+pastebinUrl = 'https://fars.ee/u'
+pastebinHeaders = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+pastebinJson = {'content': '', 'filename': ''}
+def check_upload_file(fileType, fileName, fileLink):
+    if not fileType in textFiles:
+        return ''
+    try:
+        myFile = requests.get(fileLink, timeout=(1, 10))
+    except:
+        pass
+    else:
+        if myFile.status_code == 200:
+            myJson = pastebinJson.copy()
+            myJson['filename'] = fileName
+            myJson['content'] = myFile.text
+            try:
+                pasteRet = requests.post(url = pastebinUrl,
+                                         headers = pastebinHeaders,
+                                         json = myJson,
+                                         timeout = (1,10)
+                                         )
+            except:
+                pass
+            else:
+                if pasteRet.status_code == 200:
+                    return pasteRet.json()['url']
+    return ''
+
 
 def new_event(msgDict):
     myLogger.debug(f'Get notice: {msgDict}')
@@ -26,4 +61,25 @@ def new_event(msgDict):
         myLogger.info(f'收到新的好友添加请求，来自id: {msgDict["user_id"]}')
         hakuCore.report.report(f'收到新的好友添加请求，来自id: {msgDict["user_id"]}')
     elif msgDict['notice_type'] == 'group_upload':
-        hakuCore.cqhttpApi.send_group_msg(msgDict['group_id'], '文件上传信息: ' + str(msgDict))
+        fileInfo = msgDict['file']
+        fileSize = fileInfo['size']
+        fileName = fileInfo['name']
+        fileLink = fileInfo['url']
+        fileType = fileName.split('.', fileName.count('.'))[-1]
+        pasteLink = ''
+        if fileSize < 1048576:
+            # pastebin
+            pasteLink = check_upload_file(fileType, fileName, fileLink)
+            if fileSize < 1024:
+                fileSize = f'{fileSize} B'
+            else:
+                fileSize = f'{fileSize/1024} KB'
+        elif fileSize < 1073741824:
+            fileSize = f'{fileSize/1048576} MB'
+        else:
+            fileSize = f'{fileSize/1073741824} GB'
+        retMsg = f'↑文件上传信息~\n文件名: {fileName}\n文件类型: {fileType}\n文件大小: {fileSize}'
+        if pasteLink:
+            retMsg += f'\nPastebin: {pasteLink}'
+        hakuCore.cqhttpApi.send_group_msg(msgDict['group_id'], retMsg)
+
