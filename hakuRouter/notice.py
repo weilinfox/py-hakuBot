@@ -14,17 +14,20 @@ INDEX = hakuConfig.get('index', '.')
 
 myLogger = logging.getLogger('hakuBot')
 
-textFiles = ['txt', 'md', 'csv', 'sh',
-             'py', 'java', 'kt', 'go', 'cs',
-             'c', 'cpp', 'cxx', 'h', 'hpp', 'cu',
-             's', 'S', 'v', 'vhd', 'vhdl',
-             'php', 'html', 'css', 'jsp',
-             'json', 'hjson', 'xml', 'yaml']
+textFiles = {'txt':'text', 'log':'text', 'md':'md', 'csv':'text', 'tex':'tex',
+             'sh':'sh', 'bash':'bash', 'zsh':'zsh', 'cmake':'cmake',
+             'py':'py', 'java':'java', 'kt':'kotlin', 'go':'go', 'cs':'csharp',
+             'c':'c', 'cpp':'cpp', 'cxx':'cpp', 'h':'c', 'hpp':'cpp', 'cu':'cuda',
+             's':'asm', 'S':'asm', 'asm':'asm', 'v':'verilog', 'vhd':'vhdl', 'vhdl':'vhdl',
+             'php':'php', 'html':'html', 'css':'css', 'jsp':'jsp', 'js':'js',
+             'json':'json', 'hjson':'text', 'xml':'xml', 'yaml':'yaml',
+             'lisp':'lisp', 'pas':'pascal', 'erl':'erlang', 'hrl':'erlang', 'rs':'rust',
+             'hs':'haskell', 'lua':'lua', 'pl':'perl', 'rb':'ruby', 'swift':'swift'}
 pastebinUrl = 'https://fars.ee/'
 pastebinHeaders = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 pastebinJson = {'content': ''}
 def check_upload_file(fileType, fileName, fileLink):
-    if not fileType in textFiles:
+    if not fileType in textFiles.keys():
         return ''
     try:
         myFile = requests.get(fileLink, timeout=(1, 10))
@@ -44,7 +47,7 @@ def check_upload_file(fileType, fileName, fileLink):
                 pass
             else:
                 if pasteRet.status_code == 200:
-                    return pasteRet.json()['url']
+                    return f"{pasteRet.json()['url']}/{textFiles[fileType]}"
     return ''
 
 
