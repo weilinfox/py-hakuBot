@@ -22,7 +22,7 @@ textFiles = ['txt', 'md', 'csv', 'sh',
              'json', 'hjson', 'xml', 'yaml']
 pastebinUrl = 'https://fars.ee/'
 pastebinHeaders = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-pastebinJson = {'content': '', 'filename': ''}
+pastebinJson = {'content': ''}
 def check_upload_file(fileType, fileName, fileLink):
     if not fileType in textFiles:
         return ''
@@ -33,17 +33,11 @@ def check_upload_file(fileType, fileName, fileLink):
     else:
         if myFile.status_code == 200:
             myJson = pastebinJson.copy()
-            myJson['filename'] = fileName
             myJson['content'] = myFile.text
             try:
                 pasteRet = requests.post(url = pastebinUrl,
                                          headers = pastebinHeaders,
                                          json = myJson,
-                                         timeout = (1,10)
-                                         )
-                pasteRet = requests.post(url = pastebinUrl + 'u',
-                                         headers = pastebinHeaders,
-                                         json = {'content': pasteRet.json()['url']},
                                          timeout = (1,10)
                                          )
             except:
