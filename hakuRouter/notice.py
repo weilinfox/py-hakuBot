@@ -75,11 +75,11 @@ def new_event(msgDict):
             if fileSize < 1024:
                 fileSize = f'{fileSize} B'
             else:
-                fileSize = f'{fileSize/1024} KB'
+                fileSize = f'{fileSize/1024:.2f} KB'
         elif fileSize < 1073741824:
-            fileSize = f'{fileSize/1048576} MB'
+            fileSize = f'{fileSize/1048576:.2f} MB'
         else:
-            fileSize = f'{fileSize/1073741824} GB'
+            fileSize = f'{fileSize/1073741824:.2f} GB'
         retMsg = f'↑文件上传信息~\n文件名: {fileName}\n文件类型: {fileType}\n文件大小: {fileSize}'
         if pasteLink:
             retMsg += f'\nPastebin: {pasteLink}'
