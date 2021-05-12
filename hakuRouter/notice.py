@@ -41,13 +41,11 @@ def check_upload_file(fileType, fileName, fileLink):
                                          json = myJson,
                                          timeout = (1,10)
                                          )
-                '''
                 pasteRet = requests.post(url = pastebinUrl + 'u',
                                          headers = pastebinHeaders,
                                          json = {'content': pasteRet.json()['url']},
                                          timeout = (1,10)
                                          )
-                '''
             except:
                 pass
             else:
