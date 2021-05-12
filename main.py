@@ -14,7 +14,7 @@ import hakuCore.plugin as hakuPlg
 import hakuCore.report
 
 # 版本
-VERSION = 'py-hakuBot v0.0.1'
+VERSION = 'py-hakuBot v0.0.2'
 
 # 模块记录 用于reload
 modules = ('hakuLog', 'hakuStatus', 'dataMethod', 'callHaku', 'hakuApi', 'hakuPlg', 'hakuCore.report')

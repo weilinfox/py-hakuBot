@@ -4,6 +4,7 @@
 import logging, time, threading
 import hakuCore.cqhttpApi
 import hakuData.method
+import hakuCore.report
 
 configDict = hakuData.method.get_config_dict()
 serverConfig = configDict.get('server_config', {})
@@ -21,3 +22,8 @@ def new_event(msgDict):
     elif msgDict['notice_type'] == 'notify' and msgDict['sub_type'] == 'lucky_king':
         greetMsg = '运气王出现了'
         hakuCore.cqhttpApi.send_group_msg(msgDict['group_id'], '[CQ:at,qq=' + str(msgDict['target_id']) + ']\n' + greetMsg)
+    elif msgDict['notice_type'] == 'friend_add':
+        myLogger.info(f'收到新的好友添加请求，来自id: {msgDict["user_id"]}')
+        hakuCore.report.report(f'收到新的好友添加请求，来自id: {msgDict["user_id"]}')
+    elif msgDict['notice_type'] == 'group_upload':
+        hakuCore.cqhttpApi.send_group_msg(msgDict['group_id'], '文件上传信息: ' + str(msgDict))

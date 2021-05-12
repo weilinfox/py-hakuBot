@@ -76,7 +76,8 @@ def new_event(msgDict):
     myLogger.info(f'Current message frequency: {msgTimeCacheLen}/min\nGet message: {msgDict}')
     modName = ''
     if msgDict['message'][0] == INDEX:
-        modName = list(msgDict['message'][1:].split())[0]
+        # modName = list(msgDict['message'][1:].split())[0]
+        modName = list(msgDict['message'].split())[0][1:]
     if modName:
         myLogger.debug(f'Cache plugin: {msgDict["message"][1:]}')
         hakuPlg.run_module(msgDict, 'message', modName)
