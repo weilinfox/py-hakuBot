@@ -3,7 +3,7 @@
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
 import flask
-import time, json, importlib, threading, os, traceback
+import time, json, importlib, threading, os, traceback, random
 import logging, logging.config
 import hakuData.log as hakuLog
 import hakuData.method as dataMethod
@@ -53,7 +53,8 @@ myLogger.info('logger init finished.')
 flaskApp = flask.Flask(__name__)
 updateLock = threading.Lock()
 threadLock = threading.Lock()
-threadDict = dict()
+threadIdList = []
+threadDict = {}
 threadCount = 0
 
 # 初始化hakuCore
@@ -65,25 +66,42 @@ hakuCore.report.init_report(ADMINQID, ADMINGID)
 startTime = time.time()
 hakuStatus.regest_router('__main__', {'start_time':startTime})
 
+def get_thread_id():
+    # 获取新thread id
+    global threadIdList
+    while True:
+        newId = random.random()
+        threadIdList.append(newId)
+        if threadIdList.count(newId) > 1:
+            threadIdList.remove()
+        else:
+            return newId
+
+def del_thread_id(nid):
+    global threadIdList
+    threadIdList.remove(nid)
+
 def clear_threadDict():
     # 清理threadDict
     global threadDict
     popKeys = list()
     for thr in threadDict.keys():
-        if not thr.is_alive():
+        if not threadDict[thr].is_alive():
             popKeys.append(thr)
     for thr in popKeys:
         threadDict.pop(thr)
+        del_thread_id(thr)
+    return len(popKeys)
 
-def new_thread(msgDict):
-    global updateLock, threadLock, threadDict, threadCount, modules
+def new_thread(msgDict, nid):
+    global updateLock, threadLock, threadDict, threadCount, modules, threadIdList
     # update期间不允许新事件
     # 例行清理
     if updateLock.locked():
-        threadCount -= 1
-        clear_threadDict()
-        if threadLock.locked() and len(threadDict) == 0:
-            threadCount = 0
+        threadIdList.remove(nid)
+        threadDict.pop(nid)
+        threadCount -= 1 + clear_threadDict()
+        if threadCount < 1 and threadLock.locked():
             threadLock.release()
         return
     # 新事件 逻辑
@@ -92,27 +110,23 @@ def new_thread(msgDict):
     except:
         myLogger.exception('RuntimeError')
     # 线程记录和锁
-    threadCount -= 1
-    if (updateLock.locked() and threadCount <= 1) or threadCount < 1:
-        if threadLock.locked():
-            myLogger.debug('release threadLock')
-            threadLock.release()
-    clear_threadDict()
-    myLogger.debug(f'{threadCount} threads are running currently')
+    threadIdList.remove(nid)
+    threadDict.pop(nid)
+    threadCount -= 1 + clear_threadDict()
+    if threadCount < 1 and threadLock.locked():
+        myLogger.debug('release threadLock')
+        threadLock.release()
+
+    myLogger.debug(f'{threadCount} thread(s) is/are running currently')
 
 def update_thread():
     global updateLock, threadCount, threadLock
     # 同时只允许一个update线程
     if updateLock.locked():
-        threadCount -= 1
         return
     # update锁 期间不允许更多线程进入
     with updateLock:
         myLogger.debug(f'Waiting for {threadCount} threads...')
-        # 防止死锁?
-        if threadCount == 1 and threadLock.locked():
-            threadLock.release()
-            myLogger.debug('self release threadLock')
         # update逻辑
         with threadLock:
             myLogger.debug('start update process')
@@ -168,7 +182,6 @@ def update_thread():
             # 删除不存在的plugin
             for md in delPlugin:
                 pluginDict.pop(md)
-    threadCount -= 1
 
 # 事件触发
 @flaskApp.route('/', methods=['POST'])
@@ -181,24 +194,29 @@ def newMsg():
     else:
         if threadCount == 0: threadLock.acquire()
         threadCount += 1
-        newThread = threading.Thread(target=new_thread, args=[msgDict], daemon=True)
-        threadDict[newThread] = time.time()
+        nid = get_thread_id()
+        newThread = threading.Thread(target=new_thread, args=[msgDict, nid], daemon=True)
+        threadDict[nid] = newThread
         newThread.start()
     return ''
 
 # update触发
 @flaskApp.route('/UPDATE', methods=['POST', 'GET'])
 def updateMsg():
-    global threadDict, threadCount
-    threadCount += 1
     newThread = threading.Thread(target=update_thread, args=[], daemon=True)
-    threadDict[newThread] = time.time()
     newThread.start()
     return ''
 
 @flaskApp.route('/VERSION', methods=['POST', 'GET'])
 def versionMsg():
     return VERSION
+
+@flaskApp.route('/THREADS', methods=['POST', 'GET'])
+def threadMsg():
+    msg = f'threadCount: {threadCount}\nLen of threadIdList: {len(threadIdList)}'
+    for key in threadDict:
+        msg += f'\n{key}: {threadDict[key].ident}'
+    return msg
 
 # 运行flask
 if __name__ == "__main__":
