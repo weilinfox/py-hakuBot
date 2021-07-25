@@ -65,10 +65,12 @@ test 检测订阅是否正常
     if com[1] == 'send':
         for lnk in latestMsg.keys():
             try:
-                rssText = requests.get(lnk, timeout=10).text
+                rssReq = requests.get(lnk, timeout=10)
+                rssText = rssReq.text
             except:
                 feedDict = feedparser.parse('')
             else:
+                rssReq.close()
                 feedDict = feedparser.parse(rssText)
             feedMsg = list()
             if len(feedDict.entries) == 0:
@@ -151,6 +153,7 @@ test 检测订阅是否正常
                         ans += f'\n{pos} 似乎不是一个推送链接'
                 else:
                     ans += f'\n{pos} 发现错误:{feedDict.status}'
+                rssResp.close()
             except:
                 ans += f'\n{pos} 不能正常推送'
             pos += 1
