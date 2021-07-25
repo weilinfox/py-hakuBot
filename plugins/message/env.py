@@ -26,11 +26,11 @@ def main(msgDict):
         if statusDict:
             if (serverName in statusDict['status']) and statusDict['status'][serverName]['status']:
                 myDict = statusDict['status'][serverName].copy()
-                if 'env_data' in myDict.keys():
+                if 'env_data' in myDict['status'].keys():
                     ans = f'''查询到{serverName}最近的环境记录
 在 {int(timeNow-myDict['time'])}s 之前
 env data dict:
-{myDict['env_data']}'''
+{myDict['status']['env_data']}'''
                 else:
                     ans = f'{serverName} 没有环境检测功能'
             else:
