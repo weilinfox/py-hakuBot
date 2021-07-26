@@ -50,10 +50,16 @@ def check_upload_file(fileType, fileName, fileLink):
                     return f"{pasteRet.json()['url']}/{textFiles[fileType]}"
     return ''
 
+def greet_block(groupId):
+    if groupId in [776045778]:
+        return True
+    return False
+
 
 def new_event(msgDict):
     myLogger.debug(f'Get notice: {msgDict}')
-    if msgDict['notice_type'] == 'group_increase':
+    if msgDict['notice_type'] == 'group_increase' and msgDict['user_id'] != msgDict['self_id'] and \
+                                                    (not greet_block(msgDict['group_id'])):
         greetMsg = f'欢迎欢迎，进了群就是一家人了~\n{INDEX}help 查看给小白的指示哦'
         hakuCore.cqhttpApi.send_group_msg(msgDict['group_id'], '[CQ:at,qq=' + str(msgDict['user_id']) + ']\n' + greetMsg)
     elif msgDict['notice_type'] == 'notify' and msgDict['sub_type'] == 'lucky_king':
