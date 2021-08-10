@@ -90,4 +90,27 @@ def new_event(msgDict):
         if pasteLink:
             retMsg += f'\nPastebin: {pasteLink}'
         hakuCore.cqhttpApi.send_group_msg(msgDict['group_id'], retMsg)
+    elif msgDict['notice_type'] == 'offline_file':
+        fileInfo = msgDict['file']
+        fileSize = fileInfo['size']
+        fileName = fileInfo['name']
+        fileLink = fileInfo['url']
+        fileType = fileName.split('.', fileName.count('.'))[-1]
+        pasteLink = ''
+        if fileSize < 1048576:
+            # pastebin
+            pasteLink = check_upload_file(fileType, fileName, fileLink)
+            if fileSize < 1024:
+                fileSize = f'{fileSize} B'
+            else:
+                fileSize = f'{fileSize/1024:.2f} KB'
+        elif fileSize < 1073741824:
+            fileSize = f'{fileSize/1048576:.2f} MB'
+        else:
+            fileSize = f'{fileSize/1073741824:.2f} GB'
+        retMsg = f'↑文件上传信息~\n文件名: {fileName}\n文件类型: {fileType}\n文件大小: {fileSize}'
+        if pasteLink:
+            retMsg += f'\nPastebin: {pasteLink}'
+        hakuCore.cqhttpApi.send_private_msg(msgDict['user_id'], retMsg)
+        
 
