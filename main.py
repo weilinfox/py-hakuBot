@@ -222,7 +222,7 @@ def threadMsg():
 def statusMsg():
     nm = flask.request.args.get('name', '')
     if nm:
-        dct, tm = hakuStatus.get_status(name)
+        dct, tm = hakuStatus.get_status(nm)
         return json.dumps({'message':dct,'time':tm})
     else:
         return json.dumps({'message':'invalid args','time':int(time.time())})
