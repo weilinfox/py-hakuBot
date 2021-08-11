@@ -223,9 +223,9 @@ def statusMsg():
     nm = flask.request.args.get('name', '')
     if nm:
         dct, tm = hakuStatus.get_status(name)
-        return {'message':dct,'time':tm}
+        return json.dumps({'message':dct,'time':tm})
     else:
-        return {'message':'invalid args','time':int(time.time())}
+        return json.dumps({'message':'invalid args','time':int(time.time())})
 
 # 运行flask
 if __name__ == "__main__":
