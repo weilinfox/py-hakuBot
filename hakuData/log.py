@@ -29,12 +29,12 @@ logDict = {
             'filename': './hakuBot_flask.log',
             'maxBytes': 1000000,
             'backupCount': 16,
-            'level': 'WARNING',
+            'level': 'DEBUG',
             'delay': False
         },
         'flask_console':{
             'class':'logging.StreamHandler',
-            'level': 'WARNING',
+            'level': 'DEBUG',
             'formatter': 'default'
         }
     },
@@ -52,10 +52,12 @@ logDict = {
     }
 }
 
+
 def init_log_path(lgp):
     global logDict
     logDict['handlers']['file']['filename'] = lgp + '/hakuBot.log'
     logDict['handlers']['flask_file']['filename'] = lgp + '/hakuBot.log'
+
 
 def init_log_level(lvl, clvl):
     global logDict
@@ -65,6 +67,7 @@ def init_log_level(lvl, clvl):
         clvl = 'INFO'
     logDict['handlers']['file']['level'] = lvl
     logDict['handlers']['console']['level'] = clvl
+
 
 def init_flack_log_level(lvl, clvl):
     global logDict

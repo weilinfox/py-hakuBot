@@ -34,8 +34,9 @@ THREAD = serverConfig.get('threads', False)
 PROCESS = serverConfig.get('processes', 1)
 LOGLEVEL = serverConfig.get('log_level', 'INFO')
 CLOGLEVEL = serverConfig.get('console_log_level', 'INFO')
-FLASKLOGLEVEL = 'WARNING'
-FLASKCLOGLEVEL = 'WARNING'
+FLASKLOGLEVEL = 'ERROR'
+FLASKCLOGLEVEL = 'ERROR'
+FLASKLOGGER = logging.getLogger('werkzeug')
 FLASKDEBUG = False
 
 ADMINQID = hakuConfig.get('admin_qq', 0)
@@ -44,6 +45,8 @@ ADMINGID = hakuConfig.get('admin_group', 0)
 # 初始化log
 hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
 hakuLog.init_flack_log_level(FLASKLOGLEVEL, FLASKCLOGLEVEL)
+# 这里强制设置 由于一直无效
+FLASKLOGGER.setLevel(logging.ERROR)
 logging.config.dictConfig(hakuLog.logDict)
 myLogger = logging.getLogger('hakuBot')
 dataMethod.build_logger()
@@ -109,11 +112,11 @@ def clear_thread_id():
 
 def new_thread(msgDict, nid):
     global updateLock, threadLock, threadDict, threadCount, modules, threadIdList
-    # 清理
-    clear_thread_id()
     # update期间不允许新事件
     if updateLock.locked():
         del_thread_id(nid)
+        # 清理
+        clear_thread_id()
         return
     # 新事件 逻辑
     try:
