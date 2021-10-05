@@ -1,5 +1,5 @@
 [Unit]
-Description=Auto start haku-manager and sensors
+Description=Auto start hakuBot
 After=network.target
 
 [Service]

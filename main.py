@@ -46,7 +46,7 @@ ADMINGID = hakuConfig.get('admin_group', 0)
 hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
 hakuLog.init_flack_log_level(FLASKLOGLEVEL, FLASKCLOGLEVEL)
 # 这里强制设置 由于一直无效
-FLASKLOGGER.setLevel(logging.ERROR)
+FLASKLOGGER.setLevel(logging.WARNING)
 logging.config.dictConfig(hakuLog.logDict)
 myLogger = logging.getLogger('hakuBot')
 dataMethod.build_logger()

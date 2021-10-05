@@ -1,0 +1,11 @@
+[Unit]
+Description=Auto start hakuBot check
+After=network.target
+
+[Service]
+Type=simple
+User=USER
+ExecStart=/PATH/TO/BOT/check.py
+
+[Install]
+WantedBy=multi-user.target
