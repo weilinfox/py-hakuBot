@@ -72,40 +72,48 @@ def get_thread_id():
     global threadIdList
     while True:
         newId = random.random()
-        if threadIdList.count(newId):
-            continue
         threadIdList.append(newId)
+        if threadIdList.count(newId) > 1:
+            threadIdList.remove(newId)
+            continue
         return newId
 
 
+def save_thread_id(thrObj, nid):
+    global threadIdList, threadDict, threadCount, threadLock
+    if threadCount == 0:
+        threadLock.acquire()
+    threadDict[nid] = thrObj
+    threadCount += 1
+
+
 def del_thread_id(nid):
-    global threadIdList
+    global threadIdList, threadDict, threadCount, threadLock
+    threadDict.pop(nid)
     threadIdList.remove(nid)
+    threadCount -= 1
+    if threadCount == 0:
+        threadLock.release()
 
 
-def clear_threadDict():
+def clear_thread_id():
     # 清理threadDict
-    global threadDict
+    global threadDict, threadIdList
     popKeys = list()
-    for thr in threadDict.keys():
-        if not threadDict[thr].is_alive():
-            popKeys.append(thr)
-    for thr in popKeys:
-        threadDict.pop(thr)
-        del_thread_id(thr)
-    return len(popKeys)
+    for nid in threadDict.keys():
+        if not threadDict[nid].is_alive():
+            popKeys.append(nid)
+    for nid in popKeys:
+        del_thread_id(nid)
 
 
 def new_thread(msgDict, nid):
     global updateLock, threadLock, threadDict, threadCount, modules, threadIdList
+    # 清理
+    clear_thread_id()
     # update期间不允许新事件
-    # 例行清理
     if updateLock.locked():
-        threadIdList.remove(nid)
-        threadDict.pop(nid)
-        threadCount -= 1 + clear_threadDict()
-        if threadCount < 1 and threadLock.locked():
-            threadLock.release()
+        del_thread_id(nid)
         return
     # 新事件 逻辑
     try:
@@ -113,13 +121,7 @@ def new_thread(msgDict, nid):
     except:
         myLogger.exception('RuntimeError')
     # 线程记录和锁
-    threadIdList.remove(nid)
-    threadDict.pop(nid)
-    threadCount -= 1 + clear_threadDict()
-    if threadCount < 1 and threadLock.locked():
-        myLogger.debug('release threadLock')
-        threadLock.release()
-
+    del_thread_id(nid)
     myLogger.debug(f'{threadCount} thread(s) is/are running currently')
 
 
@@ -197,11 +199,9 @@ def newMsg():
     except:
         myLogger.exception('RuntimeError')
     else:
-        if threadCount == 0: threadLock.acquire()
-        threadCount += 1
         nid = get_thread_id()
         newThread = threading.Thread(target=new_thread, args=[msgDict, nid], daemon=True)
-        threadDict[nid] = newThread
+        save_thread_id(newThread, nid)
         newThread.start()
     return ''
 

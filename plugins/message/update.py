@@ -11,8 +11,14 @@ hakuConfig = configDict.get('haku_config', {})
 
 PORT = serverConfig.get('listen_port', 8000)
 PATH = hakuData.method.get_main_path()
+onupdate = False
 
 def main(msgDict):
+    global onupdate
+    if onupdate:
+        return '已有update正在执行'
+    onupdate = True
     output = subprocess.getoutput(f'cd {PATH} && git pull')
-    rep = requests.get(url=f'http://127.0.0.1:{PORT}/UPDATE', params={}, timeout=5)
+    rep = requests.get(url=f'http://127.0.0.1:{PORT}/UPDATE', params={}, timeout=20)
+    onupdate = False
     return f'{output}\n{rep.status_code}'
