@@ -29,12 +29,12 @@ logDict = {
             'filename': './hakuBot_flask.log',
             'maxBytes': 1000000,
             'backupCount': 16,
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'delay': False
         },
         'flask_console':{
             'class':'logging.StreamHandler',
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'formatter': 'default'
         }
     },
