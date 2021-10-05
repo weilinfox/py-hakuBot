@@ -1,0 +1,11 @@
+[Unit]
+Description=Auto start haku-manager and sensors
+After=network.target
+
+[Service]
+Type=simple
+User=USER
+ExecStart=/PATH/TO/BOT/main.py
+
+[Install]
+WantedBy=multi-user.target
