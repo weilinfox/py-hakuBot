@@ -16,7 +16,7 @@ def main (msgDict):
     else:
         try:
             #resp = requests.get(url='https://v1.hitokoto.cn/',params={'c':'j'})
-            resp = requests.get(url='http://api.heerdev.top:4995/nemusic/random')
+            resp = requests.get(url='http://api.heerdev.top:4995/nemusic/random', timeout=5)
             if resp.status_code == 200:
                 rejson = json.loads(resp.text)
                 # print(rejson)

@@ -29,14 +29,14 @@ def main (msgDict):
         if days >= 0 and days <= 2 and len(req) == 4:
             params.update({'location':req[2],'adm':req[1]})
             try:
-                resp = requests.get(url=url1,params=params)
+                resp = requests.get(url=url1,params=params, timeout=5)
                 if resp.status_code == 200:
                     rejson = json.loads(resp.text)
                     print(rejson)
                     cityId = rejson['location'][0]['id']
                     province = rejson['location'][0]['adm1']
                     city = rejson['location'][0]['adm2']
-                    resp = requests.get(url=url2,params={'key':KEY,'location':cityId})
+                    resp = requests.get(url=url2,params={'key':KEY,'location':cityId}, timeout=5)
                     if resp.status_code == 200:
                         rejson = json.loads(resp.text)
                         print(rejson)

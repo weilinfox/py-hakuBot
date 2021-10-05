@@ -20,10 +20,10 @@ def main (msgDict):
         req[1] = req[1].strip()
     if len(req) > 1 and len(req[1]) > 0:
         try:
-            resp = requests.get(url=URL, params={'keywords':req[1]})
+            resp = requests.get(url=URL, params={'keywords':req[1]}, timeout=5)
         except ConnectionError:
             try: 
-                resp = requests.get(url=BACKURL, params={'keywords':req[1]})
+                resp = requests.get(url=BACKURL, params={'keywords':req[1]}, timeout=5)
             except ConnectionError:
                 ans = '啊嘞嘞好像出错了'
             except:

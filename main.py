@@ -64,22 +64,24 @@ hakuPlg.link_modules(pluginDict)
 hakuCore.report.init_report(ADMINQID, ADMINGID)
 
 startTime = time.time()
-hakuStatus.regest_router('__main__', {'start_time':startTime})
+hakuStatus.regest_router('__main__', {'start_time': startTime})
+
 
 def get_thread_id():
     # 获取新thread id
     global threadIdList
     while True:
         newId = random.random()
+        if threadIdList.count(newId):
+            continue
         threadIdList.append(newId)
-        if threadIdList.count(newId) > 1:
-            threadIdList.remove()
-        else:
-            return newId
+        return newId
+
 
 def del_thread_id(nid):
     global threadIdList
     threadIdList.remove(nid)
+
 
 def clear_threadDict():
     # 清理threadDict
@@ -92,6 +94,7 @@ def clear_threadDict():
         threadDict.pop(thr)
         del_thread_id(thr)
     return len(popKeys)
+
 
 def new_thread(msgDict, nid):
     global updateLock, threadLock, threadDict, threadCount, modules, threadIdList
@@ -118,6 +121,7 @@ def new_thread(msgDict, nid):
         threadLock.release()
 
     myLogger.debug(f'{threadCount} thread(s) is/are running currently')
+
 
 def update_thread():
     global updateLock, threadCount, threadLock
@@ -148,14 +152,14 @@ def update_thread():
             hakuApi.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
             hakuPlg.link_modules(pluginDict)
             hakuCore.report.init_report(ADMINQID, ADMINGID)
-            hakuStatus.regest_router('__main__', {'start_time':startTime})
+            hakuStatus.regest_router('__main__', {'start_time': startTime})
             # 重载插件
             delPlugin = list()
             for md in pluginDict.keys():
                 if 'quit_plugin' in dir(pluginDict[md]):
                     try:
                         myLogger.debug(f'Try to run {md}.quit_plugin')
-                        #eval(md + '.quit_plugin')()
+                        # eval(md + '.quit_plugin')()
                         pluginDict[md].quit_plugin()
                     except:
                         myLogger.exception('RuntimeError')
@@ -183,6 +187,7 @@ def update_thread():
             for md in delPlugin:
                 pluginDict.pop(md)
 
+
 # 事件触发
 @flaskApp.route('/', methods=['POST'])
 def newMsg():
@@ -200,6 +205,7 @@ def newMsg():
         newThread.start()
     return ''
 
+
 # update触发
 @flaskApp.route('/UPDATE', methods=['POST', 'GET'])
 def updateMsg():
@@ -207,9 +213,11 @@ def updateMsg():
     newThread.start()
     return ''
 
+
 @flaskApp.route('/VERSION', methods=['POST', 'GET'])
 def versionMsg():
     return VERSION
+
 
 @flaskApp.route('/THREADS', methods=['POST', 'GET'])
 def threadMsg():
@@ -218,14 +226,16 @@ def threadMsg():
         msg += f'\n{key}: {threadDict[key].ident}'
     return msg
 
+
 @flaskApp.route('/STATUS', methods=['GET'])
 def statusMsg():
     nm = flask.request.args.get('name', '')
     if nm:
         dct, tm = hakuStatus.get_status(nm)
-        return json.dumps({'message':dct,'time':tm})
+        return json.dumps({'message': dct, 'time': tm})
     else:
-        return json.dumps({'message':'invalid args','time':int(time.time())})
+        return json.dumps({'message': 'invalid args', 'time': int(time.time())})
+
 
 # 运行flask
 if __name__ == "__main__":

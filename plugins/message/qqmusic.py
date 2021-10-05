@@ -34,7 +34,7 @@ def main (msgDict):
             'w':req[1]
         }
         try:
-            resp = requests.get(url=url,params=params)
+            resp = requests.get(url=url,params=params, timeout=5)
             if resp.status_code == 200:
                 rejson = json.loads(list(resp.text.split('callback('))[1][:-1])
                 # print(rejson)

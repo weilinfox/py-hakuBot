@@ -23,7 +23,7 @@ def main(msgDict):
     # print(wd)
     params['wd'] = wd
     try:
-        resp = requests.get(url=url, params=params, headers=headers)
+        resp = requests.get(url=url, params=params, headers=headers, timeout=5)
     except:
         return '啊嘞嘞？一定是百度炸了不可能是小白！'
     if resp.status_code == 200:

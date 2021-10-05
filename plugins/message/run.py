@@ -13,7 +13,7 @@ GLOTKEY = hakuData.method.search_keys_dict('glot_key')
 
 def glotLang():
     # to fix SSL Certificate Error
-    langList = requests.get(url='https://run.glot.io/languages', verify=False).json()
+    langList = requests.get(url='https://run.glot.io/languages', verify=False, timeout=5).json()
     langDict = {}
     for dct in langList:
         langDict[dct['name']] = dct['url'] + '/latest'
@@ -81,7 +81,7 @@ def main(msgDict):
                         }]
                     }
                     # to fix SSL Certificate Error
-                    resp = requests.post(url=url, headers=headers, json=data, verify=False).json()
+                    resp = requests.post(url=url, headers=headers, json=data, verify=False, timeout=5).json()
                     if len(resp['stdout']):
                         ans += 'stdout:\n' + resp['stdout']
                     if len(resp['stderr']):

@@ -29,7 +29,7 @@ def main (msgDict):
             params = {'c':'a'}
 
         try:
-            resp = requests.get(url=url,params=params)
+            resp = requests.get(url=url,params=params, timeout=5)
             if resp.status_code == 200:
                 rejson = json.loads(resp.text)
                 # print(rejson)
