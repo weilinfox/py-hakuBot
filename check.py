@@ -4,7 +4,7 @@
 
 import flask, logging
 import time, json, importlib, threading, os, traceback, random
-import sys, getopt, os, requests, json
+import sys, getopt, os, requests, json, re
 
 HOST = '0.0.0.0'
 PORT = 8002
@@ -36,10 +36,21 @@ else:
 print(f'Opration will be send to host: 127.0.0.1:{port}')
 
 def check(name):
+    if len(name) > 64:
+        return {'code': 400, "message": 'Request name too long.'}
+    try:
+        mt = re.match(r'[\d\w-]+', name)
+        if not mt or name != mt.group(0):
+            return {'code': 400, 'message': 'Request name check failed.'}
+    except Exception as e:
+        print(e)
+        return {'code': 500, 'message': e}
+
     resjson = dict()
     try:
         resjson = requests.get(url=f'http://127.0.0.1:{port}/STATUS', params={'name':name}, timeout=(1,2)).json()
     except Exception as e:
+        print(e)
         return {'code':400, 'message':'Request failed.'}
 
     return {'code': 200, 'message': resjson}
