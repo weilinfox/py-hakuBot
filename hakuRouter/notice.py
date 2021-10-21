@@ -51,7 +51,7 @@ def check_upload_file(fileType, fileName, fileLink):
     return ''
 
 def block_group(groupId):
-    if groupId in [776045778,614236428,865409903]:
+    if groupId in [776045778,614236428,865409903,922566903]:
         return True
     return False
 
