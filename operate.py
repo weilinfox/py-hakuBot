@@ -2,20 +2,23 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import sys, getopt, os, requests, json
+import sys
+import os
+import requests
+import json
+
 
 def main(args):
     if len(args) != 1 or args[0] == 'help':
-        print(
-'''
+        print('''
 Usage: operate [COMMAND]          Run hakuBot command
 
        COMMAND:
             VERSION     Get hakuBot version
             UPDATE      Update hakuBot
-'''
-            )
+''')
         return 0
+
     configFile = os.path.normpath(os.path.dirname(os.path.abspath(__file__))) + '/files/config.json'
     print(f'Load config file: {configFile}')
     port = 0
@@ -47,6 +50,7 @@ Usage: operate [COMMAND]          Run hakuBot command
             print(f'Return text: {resp.text}')
             return 1
     return 0
+
 
 if __name__ == "__main__":
    main(sys.argv[1:])
