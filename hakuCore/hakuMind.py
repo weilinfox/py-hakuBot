@@ -7,6 +7,7 @@ import logging
 pluginModules = dict()
 myLogger = logging.getLogger('hakuBot')
 
+
 def new_event(msgDict):
     global pluginModules, myLogger
     msgType = msgDict.get('post_type', 'NULL')
@@ -33,6 +34,7 @@ def new_event(msgDict):
             imp.new_event(msgDict)
         except:
             myLogger.exception('RuntimeError')
+
 
 def link_modules(plgs):
     global pluginModules

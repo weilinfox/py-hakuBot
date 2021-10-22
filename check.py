@@ -2,9 +2,12 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import flask, logging
-import time, json, importlib, threading, os, traceback, random
-import sys, getopt, os, requests, json, re
+import flask
+import logging
+import os
+import requests
+import json
+import re
 
 HOST = '0.0.0.0'
 PORT = 8002

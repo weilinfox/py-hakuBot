@@ -1,7 +1,12 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import os, sys, threading, json, csv, logging
+import os
+import sys
+import threading
+import json
+import csv
+import logging
 import hakuData.log
 
 # 路径检测和初始化
@@ -18,7 +23,7 @@ configFile = dataPath + '/config.json'
 keysFile = dataPath + '/keys.json'
 logPath = dataPath + '/log'
 
-myLogger = None
+myLogger = logging.getLogger('hakuBot')
 
 if not os.path.exists(dataPath):
     print('mkdir {}'.format(dataPath))
@@ -38,18 +43,15 @@ if not os.path.exists(logPath):
 if not os.path.exists(keysFile):
     print('edit {}'.format(keysFile))
     kys = open(keysFile, 'w')
-    kys.write(
-'''{
+    kys.write('''{
     "sample":"myKey"
-}'''
-        )
+}''')
     kys.close()
 if not os.path.exists(configFile) or not os.path.isfile(configFile):
     print('edit {}'.format(configFile))
     config = open(configFile, 'w')
     # default config data
-    config.write(
-'''{
+    config.write('''{
     "server_config":{
         "listen_host": "127.0.0.1",
         "listen_port": 8000,
@@ -65,8 +67,7 @@ if not os.path.exists(configFile) or not os.path.isfile(configFile):
         "admin_group": -1,
         "index": "."
     }
-}'''
-        )
+}''')
     config.close()
     print('The initial config file has created, you should edit it manually.')
     sys.exit()
@@ -83,6 +84,8 @@ kysFile.close()
 
 # 获取各目录配置文件
 filenamesLock = threading.Lock()
+
+
 def get_filenames():
     global csvFiles, sqliteFiles, jsonFiles, filenamesLock
     with filenamesLock:
@@ -93,31 +96,43 @@ def get_filenames():
         f = os.walk(jsonPath)
         jsonFiles = set(next(f)[2])
 
+
 def get_main_path():
     return mainPath
+
 
 def get_data_path():
     return dataPath
 
+
 def get_plugin_path(routerName, mdlName):
     return f'{mainPath}/plugins/{routerName}/{mdlName}.py'
+
 
 # config.json路径
 def get_config_json():
     return configFile
+
+
 # config.json内容
 def get_config_dict():
     return configFileDict
 
+
 # keys.json路径
 def get_keys_json():
     return keysFile
+
+
 # keys.json内容
 def get_keys_dict():
     return keysFileDict
+
+
 # keys.json查询
 def search_keys_dict(field):
     return keysFileDict.get(field, '')
+
 
 # 插件配置路径
 def get_plugin_config_json(plgName):
@@ -131,8 +146,7 @@ def get_plugin_config_json(plgName):
             else: print(f'{fileName} exists but not in jsonFiles.')
         else:
             conf = open(filePath, "w")
-            conf.write(
-'''
+            conf.write( '''
 {
     "auth": {
         "allow_group":[],
@@ -142,18 +156,20 @@ def get_plugin_config_json(plgName):
         "no_error_msg": false
     }
 }
-'''
-                )
+''')
             conf.close()
             jsonFiles.add(fileName)
     return filePath
+
 
 # csv文件操作
 csvFileLock = threading.Lock()
 csvUpdateSet = set() # csv update一次性标志
 
+
 def get_csv_file_by_name(router, name):
     return f"{router}.{name}.csv"
+
 
 def touch_csv_file(fileName, headers):
     global csvFiles, csvFileLock
@@ -166,6 +182,7 @@ def touch_csv_file(fileName, headers):
         writer.writeheader()
         csvf.close()
         csvFiles.add(fileName)
+
 
 def read_dict_csv_file(fileName, headers):
     global csvFiles, csvFileLock
@@ -186,6 +203,7 @@ def read_dict_csv_file(fileName, headers):
             csvf.close()
         return dictList
 
+
 def write_dict_csv_file(fileName, headers, fileDict):
     global csvFiles, csvFileLock, csvUpdateSet
     if not fileName in csvFiles:
@@ -201,6 +219,7 @@ def write_dict_csv_file(fileName, headers, fileDict):
         csvUpdateSet.add(fileName)
     return 0
 
+
 def write_dict_csv_file_add(fileName, headers, fileDict):
     global csvFiles, csvFileLock, csvUpdateSet
     if not fileName in csvFiles:
@@ -214,6 +233,7 @@ def write_dict_csv_file_add(fileName, headers, fileDict):
         csvf.close()
     return 0
 
+
 def get_csv_update_flag(fileName):
     global csvUpdateSet, csvFileLock
     flag = False
@@ -223,9 +243,11 @@ def get_csv_update_flag(fileName):
             flag = True
     return flag
 
+
 def build_logger():
     global myLogger
     myLogger = logging.getLogger('hakuBot')
+
 
 get_filenames()
 hakuData.log.init_log_path(logPath)

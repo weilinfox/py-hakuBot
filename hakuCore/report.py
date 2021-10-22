@@ -6,10 +6,12 @@ import hakuCore.cqhttpApi
 reportQid = -1
 reportGid = -1
 
-def init_report (qid, gid):
+
+def init_report(qid, gid):
     global reportGid, reportQid
     reportQid, reportGid = qid, gid
 
-def report (msg):
+
+def report(msg):
     if reportQid > 99999: hakuCore.cqhttpApi.send_private_msg(reportQid, msg)
     if reportGid > 99999: hakuCore.cqhttpApi.send_group_msg(reportGid, msg)

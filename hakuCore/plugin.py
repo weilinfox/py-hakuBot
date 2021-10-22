@@ -1,12 +1,16 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import os, json, logging, importlib
+import os
+import json
+import logging
+import importlib
 import hakuCore.cqhttpApi as hakuApi
 import hakuData.method
 
 pluginModules = dict()
 myLogger = logging.getLogger('hakuBot')
+
 
 # 准入规则 需要满足配置中的各条
 def check_plugin_auth(msgDict, routerName, mdlName):
@@ -42,6 +46,7 @@ def check_plugin_auth(msgDict, routerName, mdlName):
 
     return allow, no_error_msg
 
+
 def get_module(msgDict, routerName, mdlName):
     global pluginModules
     plgName = f'plugins.{routerName}.{mdlName}'
@@ -68,6 +73,7 @@ def get_module(msgDict, routerName, mdlName):
             pluginModules[plgName] = plgModule
     return plgModule
 
+
 def run_module(msgDict, routerName, mdlName):
     plgModule = get_module(msgDict, routerName, mdlName)
     if plgModule:
@@ -77,7 +83,7 @@ def run_module(msgDict, routerName, mdlName):
                 hakuApi.reply_msg(msgDict, plgMsg)
         except:
             myLogger.exception('RuntimeError')
-    #myLogger.info(hakuApi.get_status())
+
 
 def link_modules(plgs):
     global pluginModules
