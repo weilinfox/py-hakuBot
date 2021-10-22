@@ -1,9 +1,10 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
-
-# rss推送
-# 实现自动推送需要配合 py-hakuBot 的定时命令功能
-# 命令为 [index]rss send
+"""
+rss推送
+实现自动推送需要配合 py-hakuBot 的定时命令功能
+命令为 [index]rss send
+"""
 
 import time
 import requests
@@ -14,11 +15,11 @@ import hakuCore.cqhttpApi as hakuApi
 import hakuData.method as hakuMethod
 import hakuData.addBlock as hakuBlock
 
-groupData = hakuMethod.read_dict_csv_file(
-    hakuMethod.get_csv_file_by_name("rss", "group_rss"), ["id", "link"]
+groupData = hakuMethod.csv_read_dict(
+    hakuMethod.csv_get_name("rss", "group_rss"), ["id", "link"]
     )
-userData = hakuMethod.read_dict_csv_file(
-    hakuMethod.get_csv_file_by_name("rss", "user_rss"), ["id", "link"]
+userData = hakuMethod.csv_read_dict(
+    hakuMethod.csv_get_name("rss", "user_rss"), ["id", "link"]
     )
 userDict = dict()
 groupDict = dict()
@@ -43,13 +44,13 @@ for data in userData:
 writeCsvLock = threading.Lock()
 def write_csv_file(typeNum):
     if typeNum:
-        fileName = hakuMethod.get_csv_file_by_name("rss", "group_rss")
+        fileName = hakuMethod.csv_get_name("rss", "group_rss")
         linkDict = groupData
     else:
-        fileName = hakuMethod.get_csv_file_by_name("rss", "user_rss")
+        fileName = hakuMethod.csv_get_name("rss", "user_rss")
         linkDict = userData
     with writeCsvLock:
-        hakuMethod.write_dict_csv_file(fileName, ["id", "link"], linkDict)
+        hakuMethod.csv_write_dict(fileName, ["id", "link"], linkDict)
 
 def main(msgDict):
     global userDict, groupDict, linkUser, linkGroup, latestMsg, errorLink

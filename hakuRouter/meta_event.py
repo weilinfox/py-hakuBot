@@ -61,7 +61,7 @@ def load_regular_commands():
     global regularComDict
     myLogger.debug('Loading regular commands')
     with regularComLock:
-        rawDict = hakuData.method.read_dict_csv_file(regularComFile, ['command', 'interval'])
+        rawDict = hakuData.method.csv_read_dict(regularComFile, ['command', 'interval'])
     for i in range(0, len(rawDict)):
         try:
             rawDict[i]['interval'] = int(rawDict[i]['interval'])
@@ -81,7 +81,7 @@ def load_group_time_csv():
     global groupTimeDict
     myLogger.debug('Loading group time table...')
     with groupTimeLock:
-        rawData = hakuData.method.read_dict_csv_file(groupTimeFile, ['group_id', 'time', 'message'])
+        rawData = hakuData.method.csv_read_dict(groupTimeFile, ['group_id', 'time', 'message'])
         for dct in rawData:
             if dct['group_id'] in groupTimeDict:
                 if dct['time'] in groupTimeDict[dct['group_id']]['time']:
@@ -97,7 +97,7 @@ def load_group_date_csv():
     global groupDateDict
     myLogger.debug('Loading group schedual...')
     with groupDateLock:
-        rawData = hakuData.method.read_dict_csv_file(groupDateFile, ['group_id', 'date', 'message'])
+        rawData = hakuData.method.csv_read_dict(groupDateFile, ['group_id', 'date', 'message'])
         for dct in rawData:
             if dct['group_id'] in groupDateDict:
                 if dct['date'] in groupDateDict[dct['group_id']]['date']:
@@ -113,7 +113,7 @@ def load_user_time_csv():
     global userTimeDict
     myLogger.debug('Loading user time table...')
     with userTimeLock:
-        rawData = hakuData.method.read_dict_csv_file(userTimeFile, ['user_id', 'time', 'message'])
+        rawData = hakuData.method.csv_read_dict(userTimeFile, ['user_id', 'time', 'message'])
         for dct in rawData:
             if dct['user_id'] in userTimeDict:
                 if dct['time'] in userTimeDict[dct['user_id']]['time']:
@@ -129,7 +129,7 @@ def load_user_date_csv():
     global userDateDict
     myLogger.debug('Loading user schedual...')
     with userDateLock:
-        rawData = hakuData.method.read_dict_csv_file(userDateFile, ['user_id', 'date', 'message'])
+        rawData = hakuData.method.csv_read_dict(userDateFile, ['user_id', 'date', 'message'])
         for dct in rawData:
             if dct['user_id'] in userDateDict:
                 if dct['date'] in userDateDict[dct['user_id']]['date']:
@@ -179,15 +179,15 @@ def new_event(msgDict):
     if timeNow - updateTime >= 60*15:
         updateTime = timeNow
         myLogger.debug('Ask whether need to update time table.')
-        if hakuData.method.get_csv_update_flag(regularComFile):
+        if hakuData.method.csv_check_update(regularComFile):
             load_regular_commands()
-        if hakuData.method.get_csv_update_flag(userTimeFile):
+        if hakuData.method.csv_check_update(userTimeFile):
             load_user_time_csv()
-        if hakuData.method.get_csv_update_flag(groupTimeFile):
+        if hakuData.method.csv_check_update(groupTimeFile):
             load_group_time_csv()
-        if hakuData.method.get_csv_update_flag(userDateFile):
+        if hakuData.method.csv_check_update(userDateFile):
             load_user_date_csv()
-        if hakuData.method.get_csv_update_flag(groupDateFile):
+        if hakuData.method.csv_check_update(groupDateFile):
             load_group_date_csv()
 
     # 小时+8
