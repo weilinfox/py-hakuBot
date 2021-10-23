@@ -44,6 +44,13 @@ usermsgdict = {'message': '这是一个测试',
 mylogger = logging.getLogger('hakuBot')
 
 
+def test_make():
+    global testthreads
+    testthreads.clear()
+    for f in testfunctions:
+        testthreads.append(threading.Thread(target=f, args=[], daemon=True))
+
+
 def test_server_start():
     """
     启动所有测试服务器
@@ -82,7 +89,7 @@ def test_bot_busy():
     """
     res = requests.get(url=f'{sendurl}/THREADS').text.split()
     n = int(res[1])
-    return n > 0
+    return n
 
 
 if test_server_start():
@@ -376,8 +383,8 @@ testfunctions = [test_message_group,
                  test_message_group_update
                  ]
 
-for f in testfunctions:
-    testthreads.append(threading.Thread(target=f, args=[], daemon=True))
+
+test_make()
 print('Starting tests...')
 time.sleep(1)
 testcount = 0
@@ -394,6 +401,27 @@ for t in testthreads:
     print(f'Test {testcount} finished.')
 print('--------------------------------------------------------------------------------')
 
-print('Test finished.')
+print('Function test finished.')
+
+test_make()
+print('Start heavy load test.')
+print('--------------------------------------------------------------------------------')
+try:
+    for t in testthreads:
+        try:
+            t.start()
+        except Exception as e:
+            mylogger.exception(e)
+    trn = test_bot_busy()
+    while trn:
+        print(f'{trn} threads in hakubot now.')
+        time.sleep(1)
+        trn = test_bot_busy()
+except Exception as e:
+    mylogger.exception(e)
+
+print('Heavy load test finished.')
+print('--------------------------------------------------------------------------------')
+
 test_server_stop()
 
