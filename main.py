@@ -1,12 +1,16 @@
 #!/bin/python3
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
+"""
+hakuBot 主程序
+"""
 
 import flask
 import time
 import json
 import importlib
 import threading
+import os
 import traceback
 import random
 import logging.config
@@ -18,8 +22,11 @@ import hakuCore.cqhttpApi as hakuApi
 import hakuCore.plugin as hakuPlg
 import hakuCore.report
 
+if os.name == 'posix':
+    import signal
+
 # 版本
-VERSION = 'py-hakuBot v0.0.2'
+VERSION = 'py-hakuBot v0.0.5'
 
 # 模块记录 用于reload
 modules = ('hakuLog', 'hakuStatus', 'dataMethod', 'callHaku', 'hakuApi', 'hakuPlg', 'hakuCore.report')
@@ -65,6 +72,8 @@ threadIdList = []
 threadDict = {}
 threadCount = 0
 
+hakupid = os.getpid()
+
 # 初始化hakuCore
 callHaku.link_modules(pluginDict)
 hakuApi.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
@@ -76,7 +85,10 @@ hakuStatus.regest_router('__main__', {'start_time': startTime})
 
 
 def get_thread_id():
-    # 获取新thread id
+    """
+    获取新 thread id
+    :return: int
+    """
     global threadIdList
     while True:
         newId = random.random()
@@ -88,6 +100,12 @@ def get_thread_id():
 
 
 def save_thread_id(thrObj, nid):
+    """
+    将 tread id 保存在 threadDict 中构成 id: thread object 键值对
+    :param thrObj: thread 对象
+    :param nid: thread id
+    :return: 无返回值
+    """
     global threadIdList, threadDict, threadCount, threadLock
     if threadCount == 0:
         threadLock.acquire()
@@ -96,6 +114,11 @@ def save_thread_id(thrObj, nid):
 
 
 def del_thread_id(nid):
+    """
+    删除一个 thread id ，此时该 thread 应当已经停止
+    :param nid: thread id
+    :return: 无返回值
+    """
     global threadIdList, threadDict, threadCount, threadLock
     threadDict.pop(nid)
     threadIdList.remove(nid)
@@ -105,7 +128,10 @@ def del_thread_id(nid):
 
 
 def clear_thread_id():
-    # 清理threadDict
+    """
+    从 threadDict 清除异常退出的 thread id
+    :return: 无返回值
+    """
     global threadDict, threadIdList
     popKeys = list()
     for nid in threadDict.keys():
@@ -115,7 +141,21 @@ def clear_thread_id():
         del_thread_id(nid)
 
 
+def haku_start():
+    """
+    启动 hakubot flask 服务器 程序将在这里阻塞
+    :return: 无返回值
+    """
+    flaskApp.run(host=HOST, port=PORT, debug=FLASKDEBUG, threaded=THREAD, processes=PROCESS)
+
+
 def new_thread(msgDict, nid):
+    """
+    处理新消息请求
+    :param msgDict: cqhttp message dictionary
+    :param nid: thread id
+    :return: 无返回值
+    """
     global updateLock, threadLock, threadDict, threadCount, modules, threadIdList
     # update期间不允许新事件
     if updateLock.locked():
@@ -134,6 +174,10 @@ def new_thread(msgDict, nid):
 
 
 def update_thread():
+    """
+    处理模块重载请求
+    :return: 无返回值
+    """
     global updateLock, threadCount, threadLock
     # 同时只允许一个update线程
     if updateLock.locked():
@@ -198,9 +242,50 @@ def update_thread():
                 pluginDict.pop(md)
 
 
+def terminate_thread():
+    """
+    处理服务停止请求
+    :return: 无返回值
+    """
+    global updateLock, threadLock
+    time.sleep(0.5)
+    myLogger.warning('Loading terminate process...')
+    with updateLock:
+        myLogger.warning(f'Waiting for {threadCount} threads...')
+        waitime = 0
+        while threadLock.locked():
+            if waitime > 600:
+                myLogger.error('Timeout after 600 seconds, force stop now.')
+                break
+            clear_thread_id()
+            waitime = waitime + 5
+            time.sleep(5)
+        # terminate 逻辑
+        myLogger.warning('Start to terminate...')
+        for md in pluginDict.keys():
+            if 'quit_plugin' in dir(pluginDict[md]):
+                try:
+                    myLogger.info(f'Running {md}.quit_plugin...')
+                    pluginDict[md].quit_plugin()
+                except:
+                    myLogger.exception('RuntimeError')
+        try:
+            if os.name == 'posix':
+                os.kill(hakupid, signal.SIGINT)
+                os.kill(hakupid, signal.SIGINT)
+            else:
+                os.popen(f'taskkill.exe /PID {hakupid} /T')
+        except:
+            myLogger.exception('RuntimeError')
+
+
 # 事件触发
 @flaskApp.route('/', methods=['POST'])
 def newMsg():
+    """
+    新 cqhttp 消息
+    :return: 空字符串
+    """
     global threadDict, threadCount, threadLock
     try:
         msgDict = flask.request.get_json()
@@ -217,6 +302,10 @@ def newMsg():
 # update触发
 @flaskApp.route('/UPDATE', methods=['POST', 'GET'])
 def updateMsg():
+    """
+    新 update 请求
+    :return: 空字符串
+    """
     newThread = threading.Thread(target=update_thread, args=[], daemon=True)
     newThread.start()
     return ''
@@ -224,19 +313,36 @@ def updateMsg():
 
 @flaskApp.route('/VERSION', methods=['POST', 'GET'])
 def versionMsg():
+    """
+    获取 main.py 版本
+    :return: 格式化后的版本号字串
+    """
     return VERSION
 
 
 @flaskApp.route('/THREADS', methods=['POST', 'GET'])
 def threadMsg():
-    msg = f'threadCount: {threadCount}\nLen of threadIdList: {len(threadIdList)}'
+    """
+    获取当前子线程状态
+    :return: 格式化后的子线程状态字串
+    """
+    onupdate = 0
+    if updateLock.locked():
+        onupdate = 1
+    msg = f'Totalthread: {threadCount+onupdate}\nLen of threadIdList: {len(threadIdList)}'
     for key in threadDict:
         msg += f'\n{key}: {threadDict[key].ident}'
+    if onupdate:
+        msg += f'\nUpdate thread is running.'
     return msg
 
 
 @flaskApp.route('/STATUS', methods=['GET'])
 def statusMsg():
+    """
+    从 hakuData/status.py 读取状态
+    :return: 格式化后的状态字串
+    """
     nm = flask.request.args.get('name', '')
     if nm:
         dct, tm = hakuStatus.get_status(nm)
@@ -245,6 +351,18 @@ def statusMsg():
         return json.dumps({'message': 'invalid args', 'time': int(time.time())})
 
 
+@flaskApp.route('/STOP', methods=['GET'])
+def flask_terminate():
+    """
+    停止 flask 服务器
+    :return: 空字符串
+    """
+    thr = threading.Thread(target=terminate_thread, args=[], daemon=True)
+    thr.start()
+    return ''
+
+
 # 运行flask
 if __name__ == "__main__":
-    flaskApp.run(host=HOST, port=PORT, debug=FLASKDEBUG, threaded=THREAD, processes=PROCESS)
+    print(__name__)
+    haku_start()

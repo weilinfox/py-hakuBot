@@ -15,7 +15,7 @@ THREAD = False
 PROCESS = 1
 FLASKDEBUG = False
 FLASKLOGGER = logging.getLogger('werkzeug')
-FLASKLOGGER.setLevel(logging.WARNING)
+# FLASKLOGGER.setLevel(logging.WARNING)
 
 flaskApp = flask.Flask(__name__)
 
@@ -38,6 +38,7 @@ else:
     exit(1)
 print(f'Opration will be send to host: 127.0.0.1:{port}')
 
+
 def check(name):
     if len(name) > 64:
         return {'code': 400, "message": 'Request name too long.'}
@@ -58,6 +59,7 @@ def check(name):
 
     return {'code': 200, 'message': resjson}
 
+
 # 事件触发
 @flaskApp.route('/STATUS', methods=['GET'])
 def statusMsg():
@@ -66,6 +68,7 @@ def statusMsg():
     res.headers['Access-Control-Allow-Origin'] = "*"
     res.headers['Access-Control-Allow-Methods'] = 'GET'
     return res
+
 
 # 运行flask
 if __name__ == "__main__":

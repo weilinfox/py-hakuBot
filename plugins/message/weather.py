@@ -20,27 +20,46 @@ url2 = 'https://devapi.heweather.net/v7/weather/now'
 
 
 def send_request():
-    resp = requests.get(url=url1, params=params, timeout=5)
-    if resp.status_code == 200:
-        rejson = json.loads(resp.text)
-        # print(rejson)
-        cityId = rejson['location'][0]['id']
-        province = rejson['location'][0]['adm1']
-        city = rejson['location'][0]['adm2']
-        resp = requests.get(url=url2, params={'key': HEKEY, 'location': cityId}, timeout=5)
-        if resp.status_code == 200:
-            rejson = json.loads(resp.text)
-            # print(rejson)
-            ans = province + '-' + city + ' ' + rejson['now']['text'] \
-                  + '\n气温:' + rejson['now']['temp'] + '℃ 体感:' + rejson['now']['feelsLike'] + '℃' \
-                  + '\n风向:' + rejson['now']['windDir'] + ' 风力:' + rejson['now']['windScale'] + '级' \
-                  + '\n风速:' + rejson['now']['windSpeed'] + 'km/h 气压:' + rejson['now']['pressure'] + 'hPa'
-        else:
-            ans = '好像返回了奇怪的东西: ' + str(resp.status_code)
-    elif resp.status_code == 404:
-        ans = '真的有这个地方咩，别骗小白！'
-    else:
-        ans = '好像返回了奇怪的东西: ' + str(resp.status_code)
+    ans = cityId = province = city = None
+    trytime = 5
+    while not cityId and trytime > 0:
+        try:
+            resp = requests.get(url=url1, params=params, timeout=5)
+            if resp.status_code == 200:
+                rejson = json.loads(resp.text)
+                # print(rejson)
+                if rejson['code'] == '200':
+                    cityId = rejson['location'][0]['id']
+                    province = rejson['location'][0]['adm1']
+                    city = rejson['location'][0]['adm2']
+                else:
+                    ans = '真的有这个地方咩，别骗小白！'
+            else:
+                ans = '好像返回了奇怪的东西: ' + str(resp.status_code)
+            break
+        except Exception as e:
+            trytime -= 1
+    if trytime == 0:
+        ans = '啊嘞嘞好像出错了，一定是和风炸了不关小白！'
+    if cityId:
+        trytime = 5
+        while trytime > 0:
+            try:
+                resp = requests.get(url=url2, params={'key': HEKEY, 'location': cityId}, timeout=5)
+                if resp.status_code == 200:
+                    rejson = json.loads(resp.text)
+                    # print(rejson)
+                    ans = province + '-' + city + ' ' + rejson['now']['text'] \
+                          + '\n气温:' + rejson['now']['temp'] + '℃ 体感:' + rejson['now']['feelsLike'] + '℃' \
+                          + '\n风向:' + rejson['now']['windDir'] + ' 风力:' + rejson['now']['windScale'] + '级' \
+                          + '\n风速:' + rejson['now']['windSpeed'] + 'km/h 气压:' + rejson['now']['pressure'] + 'hPa'
+                else:
+                    ans = '好像返回了奇怪的东西: ' + str(resp.status_code)
+                break
+            except Exception as e:
+                trytime -= 1
+        if trytime == 0:
+            ans = '啊嘞嘞好像出错了，一定是和风炸了不关小白！'
     return ans
 
 
@@ -56,13 +75,7 @@ def main(msgDict):
         elif len(req) > 2:
             params.update({'location': req[2], 'adm': req[1]})
         if len(req) > 1:
-            # 重试 5 次
-            for t in range(1, 5):
-                try:
-                    ans = send_request()
-                    break
-                except Exception as e:
-                    ans = '啊嘞嘞好像出错了，一定是和风炸了不关小白！'
+            ans = send_request()
     else:
         ans = '好像和风不让查诶...'
 
