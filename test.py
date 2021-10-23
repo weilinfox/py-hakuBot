@@ -384,10 +384,13 @@ testcount = 0
 for t in testthreads:
     testcount += 1
     print('--------------------------------------------------------------------------------')
-    t.start()
-    t.join()
-    while test_bot_busy():
-        time.sleep(0.5)
+    try:
+        t.start()
+        t.join()
+        while test_bot_busy():
+            time.sleep(0.5)
+    except Exception as e:
+        mylogger.exception(e)
     print(f'Test {testcount} finished.')
 print('--------------------------------------------------------------------------------')
 
