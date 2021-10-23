@@ -10,12 +10,13 @@ hakuBot，利用go-cqhttp在龙芯和其他平台快速构建的qq机器人。
 
 | 系统 | 架构 | Python版本 |
 |:---:|:---:|:--------:|
-|Fedora28 |mips64el |python3.6|
-|Loongnix 20|loongarch64|python3.8|
-|Arch Linux Arm |aarch64 |python3.9|
-|Arch Linux |x86_64 |python3.9|
-|Ubuntu 21.04|x86_64 |python3.9|
-|Windows 7 |x86_64 |python3.9|
+|Fedora 28 |mips64el |python 3.6|
+|Loongnix 20|loongarch64|python 3.8|
+|Arch Linux Arm |aarch64 |python 3.9|
+|Arch Linux |x86_64 |python 3.9|
+|Ubuntu 21.04|x86_64 |python 3.9|
+|Windows 7 |x86_64 |python 3.9|
+|Windows 10 |x86_64 |python 3.10|
 
 首次运行，可以运行 ``test.py`` 检查环境是否可以正常运行 hakubot 。该测试会测试模块和必要的插件。
 

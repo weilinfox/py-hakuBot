@@ -274,7 +274,7 @@ def terminate_thread():
                 os.kill(hakupid, signal.SIGINT)
                 os.kill(hakupid, signal.SIGINT)
             else:
-                os.popen(f'taskkill.exe /PID {hakupid} /T')
+                os.popen(f'taskkill.exe /PID {hakupid} /F')
         except:
             myLogger.exception('RuntimeError')
 

@@ -54,7 +54,7 @@ def cqhttp_stop():
         os.kill(mypid, signal.SIGINT)
         os.kill(mypid, signal.SIGINT)
     else:
-        os.popen(f'taskkill.exe /PID {mypid} /T')
+        os.popen(f'taskkill.exe /PID {mypid} /F')
 
 
 @flaskApp.route('/<path>', methods=['GET', 'POST'])
