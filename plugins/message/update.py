@@ -18,7 +18,7 @@ onupdate = False
 def main(msgDict):
     global onupdate
     if onupdate:
-        return '已有update正在执行'
+        return '已有更新任务正在执行'
     onupdate = True
     onfailure = True
     trys = 0
@@ -38,7 +38,7 @@ def main(msgDict):
         repmsg = f'UPDATE request failed:\n {e}'
     else:
         if rep.status_code == 200:
-            repmsg = 'UPDATE successfully'
+            repmsg = '代码更新成功'
         else:
             repmsg = f'UPDATE failed with code {rep.status_code}'
     onupdate = False

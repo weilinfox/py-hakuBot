@@ -235,7 +235,7 @@ def handle_group_upload(msgDict):
     fileLink = fileInfo['url']
     fileType = fileName.split('.', fileName.count('.'))[-1]
     pasteLink = ''
-    if msgDict['message_type'] == 'group':
+    if msgDict['notice_type'] == 'group_upload':
         gid = msgDict['group_id']
     else:
         gid = -1
