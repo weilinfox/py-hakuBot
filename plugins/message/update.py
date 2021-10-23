@@ -25,9 +25,8 @@ def main(msgDict):
     durition = time.time()
     while onfailure:
         trys += 1
-        output = subprocess.getoutput(f'cd {PATH} && git pull')
-        outsplit = output.split()
-        if 'Already' in outsplit and "date." in outsplit:
+        code = subprocess.call(f'cd {PATH} && git pull', shell=True)
+        if code == 0:
             onfailure = False
         else:
             time.sleep(5)

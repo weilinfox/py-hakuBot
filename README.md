@@ -11,14 +11,15 @@ hakuBot，利用go-cqhttp在龙芯和其他平台快速构建的qq机器人。
 | 系统 | 架构 | Python版本 |
 |:---:|:---:|:--------:|
 |Fedora28 |mips64el |python3.6|
+|Loongnix 20|loongarch64|python3.8|
 |Arch Linux Arm |aarch64 |python3.9|
 |Arch Linux |x86_64 |python3.9|
-|Debian10 Buster |x86_64 |python3.7|
-|Windows10 |x86_64 |python3.7|
+|Ubuntu 21.04|x86_64 |python3.9|
+|Windows 7 |x86_64 |python3.9|
 
-运行hakuBot需要flask，可以运行 ``test_environment.py`` 检查环境是否具有所有所需模块。
+首次运行，可以运行 ``test.py`` 检查环境是否可以正常运行 hakubot 。该测试会测试模块和必要的插件。
 
-并没有过多考虑Linux以外的环境。Windows环境似乎没有发现什么bug，不过要注意环境变量的配置。
+除了 python3 外， hakubot 还依赖 git 命令， Windows 环境下请注意环境变量的配置。
 
 ## 特色插件
 
@@ -132,7 +133,7 @@ myLogger = logging.getLogger('hakuBot')
 
 hakuBot 具有一个代码更新插件 ``plugins/message/update.py`` ，可以通过调用该插件更新代码。
 
-代码的更新通过在 hakuBot 根目录运行 ``git pull`` 实现，若网络不佳则会一直运行直到 “Already up to date.”。随后该插件向 flask 发送 UPDATE http 请求，触发模块的重新载入。
+代码的更新通过在 hakuBot 根目录运行 ``git pull`` 并检查命令返回的退出码实现，若网络不佳则会一直运行直到退出码为 ``0`` 。随后该插件向 flask 发送 UPDATE http 请求，触发模块的重新载入。
 
 如果更新后的代码出现运行错误导致无法再次调用该插件重新升级，则需要手动干预并通过运行 ``operate.py`` 发送 UPDATE 请求，示例如下：
 
