@@ -20,6 +20,20 @@ hakuBot，利用go-cqhttp在龙芯和其他平台快速构建的qq机器人。
 
 并没有过多考虑Linux以外的环境。Windows环境似乎没有发现什么bug，不过要注意环境变量的配置。
 
+## 特色插件
+
+| 插件名   |     功能            |
+|:-------|:------------------:|
+| rss     |   自定义群 rss 推送  | 
+| baidu   |   百度搜索          |
+| bing    |   必应搜索          |
+| music   |   网易云音乐         |
+| qqmusic |   QQ 音乐           |
+| notice  |   自定义入群欢迎     |
+| weather |   和风天气          |
+| update  |   自主升级          |
+
+
 ## 快速上手
 
 首次运行hakuBot会自动生成一个合法的 ``files`` 目录，其中包含了 ``keys.json`` ``config.json`` 两个初始配置文件。编辑初始配置文件后hakuBot即可与go-cqhttp正常通信。
@@ -114,17 +128,19 @@ import logging
 myLogger = logging.getLogger('hakuBot')
 ```
 
-## 升级出错
+## 代码更新
 
-hakuBot自带了升级插件 ``plugins/message/update.py`` ，可以通过go-cqhttp进行升级，消息类似 ``.update`` （前导符号可设置）。如果hakuBot在升级后出现错误导致无法正常调用插件，则需要向仓库push正确代码后手动干预再次升级，这可以通过 ``operate.py`` 实现。 ``operate.py`` 可以手动触发hakuBot对应的接口。
+hakuBot 具有一个代码更新插件 ``plugins/message/update.py`` ，可以通过调用该插件更新代码。
 
-手动调用升级示例如下：
+代码的更新通过在 hakuBot 根目录运行 ``git pull`` 实现，若网络不佳则会一直运行直到 “Already up to date.”。随后该插件向 flask 发送 UPDATE http 请求，触发模块的重新载入。
 
-```python
+如果更新后的代码出现运行错误导致无法再次调用该插件重新升级，则需要手动干预并通过运行 ``operate.py`` 发送 UPDATE 请求，示例如下：
+
+```sh
 python3 operate.py UPDATE
 ```
 
-它会自动读取hakuBot的配置并向其监听端口发送GET请求。
+由于代码更新并不能更新主程序 ``main.py`` 的代码， flask 部分通常并不会被错误的更新损坏；由于触发 ``git pull`` 停止的事件为返回 “Already up to date.”，如果你的环境与此不同，请自行更改判断条件。
 
 ## 细节
 
@@ -152,9 +168,15 @@ python3 operate.py UPDATE
 
 注意 ``hakuRouter/meta_event`` 在调用群组设置的定时调用插件时 ``user_id`` 为 ``-1`` 。错误阻止这一id将造成群组定时调用插件失败。
 
-### 调用keys
+### 调用 keys
 
 如果插件调用了一些第三方api，可能需要key的支持。因此hakuBot设置了一个 ``keys.json`` 并在 ``hakuData/method`` 中提供了查找key的函数，可以使插件方便地调用。
+
+### notice
+
+``notice`` 是 hakuRouter 下的一级插件，用于管理群事件。实现的群事件包括群文件上传、入群欢迎、群运气王等。
+
+该一级插件可能导致 bot 发送过多的消息，这可以通过 [notice](plugins/message/notice.py) 二级插件来配置。 ``notice`` 二级插件实现的功能包括自定义群欢迎信息以及 pastebin 功能、群文件上传提示功能和整个 ``notice`` 一级插件功能的打开和关闭，并使用 sqlite3 存储。
 
 ## go-cqhttp 的报文示例
 
