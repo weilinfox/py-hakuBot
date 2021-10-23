@@ -97,6 +97,8 @@ def notice_check_block(gid, ukey):
     :param ukey: 屏蔽位名
     :return: 是/否 屏蔽 bool
     """
+    if gid < 1:
+        return False
     if ukey not in ['greet', 'notice', 'pastebin']:
         return False
     return gid in blockGidDict[ukey]
@@ -283,17 +285,6 @@ def handle_lucky_king(msgDict):
     return '[CQ:at,qq=' + str(msgDict['target_id']) + ']\n' + msg
 
 
-def handle_group_block(groupId):
-    """
-    判断群是否屏蔽了 notice 功能
-    :param groupId: 群 id
-    :return: 返回是否屏蔽
-    """
-    if groupId in [776045778, 614236428, 865409903, 922566903]:
-        return True
-    return False
-
-
 def new_event(msgDict):
     """
     notice 事件处理
@@ -302,23 +293,25 @@ def new_event(msgDict):
     """
     myLogger.debug(f'Get notice: {msgDict}')
     gid = msgDict.get('group_id', -1)
-    if gid == -1: return
-    noticeblocked = notice_check_block(gid, 'notice')
-    if handle_group_block(gid):
+
+    if notice_check_block(gid, 'notice'):
         myLogger.debug(f'Block group: {gid}')
         return
 
     if msgDict['notice_type'] == 'group_increase' and msgDict['user_id'] != msgDict['self_id']:
+        if gid == -1: return
         if not notice_check_block(gid, 'greet'):
             msg = handle_group_increase(msgDict)
             hakuCore.cqhttpApi.send_group_msg(gid, msg)
     elif msgDict['notice_type'] == 'notify' and msgDict['sub_type'] == 'lucky_king':
+        if gid == -1: return
         msg = handle_lucky_king(msgDict)
         hakuCore.cqhttpApi.send_group_msg(gid, msg)
     elif msgDict['notice_type'] == 'friend_add':
         myLogger.info(f'收到新的好友添加请求，来自id: {msgDict["user_id"]}')
         hakuCore.report.report(f'收到新的好友添加请求，来自id: {msgDict["user_id"]}')
     elif msgDict['notice_type'] == 'group_upload':
+        if gid == -1: return
         msg = handle_group_upload(msgDict)
         hakuCore.cqhttpApi.send_group_msg(gid, msg)
     elif msgDict['notice_type'] == 'offline_file':

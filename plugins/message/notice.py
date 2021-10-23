@@ -43,24 +43,30 @@ def handle_greet(gid, msg):
 
 
 def handle_on(gid, fun):
-    if notice.notice_update_block(gid, fun, True):
-        return '更新成功'
+    if fun == 'pb':
+        fun = 'pastebin'
+    if notice.notice_update_block(gid, fun, False):
+        return '打开成功'
     else:
-        return '更新失败'
+        return '打开失败'
 
 
 def handle_off(gid, fun):
-    if notice.notice_update_block(gid, fun, False):
-        return '更新成功'
+    if fun == 'pb':
+        fun = 'pastebin'
+    if notice.notice_update_block(gid, fun, True):
+        return '关闭成功'
     else:
-        return '更新失败'
+        return '关闭失败'
 
 
 def handle_show(gid, fun):
+    if fun == 'pb':
+        fun = 'pastebin'
     flag = '关闭' if notice.notice_check_block(gid, fun) else '打开'
     msg = f'状态: {flag}'
     if fun == 'greet':
-        msg = f'{msg}: {notice.notice_get_greet(gid)}'
+        msg = f'{msg}\n消息: {notice.notice_get_greet(gid)}'
     return msg
 
 
