@@ -1,7 +1,7 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 """
-毛主席语录
+马克思主义
 """
 
 import random
@@ -14,17 +14,17 @@ ADMINQID = hakuConfig.get('admin_qq', 0)
 
 
 def handle_open():
-    conn = method.sqlite_default_db_open('message', 'mao')
+    conn = method.sqlite_default_db_open('message', 'marx')
     cur = conn.cursor()
-    cur.execute('CREATE TABLE IF NOT EXISTS mao(id BIGINT, mzdsx VARCHAR(2048));')
-    cur.execute('SELECT mzdsx FROM mao WHERE id=0;')
+    cur.execute('CREATE TABLE IF NOT EXISTS marx(id BIGINT, mksvy VARCHAR(2048));')
+    cur.execute('SELECT mksvy FROM marx WHERE id=0;')
     count = cur.fetchall()
     try:
         if count:
             count = int(count[0][0])
         else:
             count = 0
-            cur.execute('INSERT INTO mao (id, mzdsx) VALUES(0, "0");')
+            cur.execute('INSERT INTO marx (id, mksvy) VALUES(0, "0");')
     except Exception as e:
         e.with_traceback()
         method.sqlite_db_close(conn)
@@ -41,8 +41,8 @@ def handle_add(msg):
     try:
         count += 1
         cur = conn.cursor()
-        cur.execute('INSERT INTO mao(id, mzdsx) VALUES(?, ?);', (count, msg))
-        cur.execute(f'UPDATE mao SET mzdsx="{count}" WHERE id=0;')
+        cur.execute('INSERT INTO marx(id, mksvy) VALUES(?, ?);', (count, msg))
+        cur.execute(f'UPDATE marx SET mksvy="{count}" WHERE id=0;')
         method.sqlite_db_close(conn)
     except Exception as e:
         e.with_traceback()
@@ -59,7 +59,7 @@ def handle_check():
         return '库里啥也没有'
     nid = random.randint(1, count)
     cur = conn.cursor()
-    cur.execute('SELECT mzdsx FROM mao WHERE id=?;', (nid,))
+    cur.execute('SELECT mksvy FROM marx WHERE id=?;', (nid,))
     msg = cur.fetchall()[0][0]
     method.sqlite_db_close(conn)
     return msg
