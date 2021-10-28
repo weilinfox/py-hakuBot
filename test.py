@@ -69,7 +69,7 @@ def test_server_stop():
     关闭所有测试服务器
     :return: 无返回值
     """
-    requests.get(url=f'{listenurl}/STOP')
+    # requests.get(url=f'{listenurl}/STOP')
     requests.get(url=f'{sendurl}/STOP')
 
 

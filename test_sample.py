@@ -62,7 +62,7 @@ def test_server_stop():
     关闭所有测试服务器
     :return: 无返回值
     """
-    requests.get(url=f'{listenurl}/STOP')
+    # requests.get(url=f'{listenurl}/STOP')
     requests.get(url=f'{sendurl}/STOP')
 
 
@@ -109,8 +109,23 @@ def test_message_private():
     test_send(usermsgdict)
 
 
+# ping 测试
+def test_message_group_ping():
+    global groupmsgdict
+    groupmsgdict['message'] = groupmsgdict['raw_message'] = '.ping'
+    test_send(groupmsgdict)
+
+
+def test_message_private_ping():
+    global usermsgdict
+    usermsgdict['message'] = usermsgdict['raw_message'] = '.ping'
+    test_send(usermsgdict)
+
+
 testfunctions = [test_message_group,
-                 test_message_private
+                 test_message_private,
+                 test_message_group_ping,
+                 test_message_private_ping
                  ]
 
 for f in testfunctions:

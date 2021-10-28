@@ -163,7 +163,7 @@ def notice_update_greetmsg(gid, msg):
         conn = hakuData.method.sqlite_default_db_open('notice', 'notice')
         cur = conn.cursor()
         if gid in greetMsgDict:
-            cur.execute(f'UPDATE greetmsg SET greetmsg="{b64msg}" WHERE gid={gid}')
+            cur.execute(f'UPDATE greetmsg SET greetmsg="{b64msg}" WHERE gid=?', (gid, ))
         else:
             cur.execute(f'INSERT INTO greetmsg (gid, greetmsg) VALUES (?,?)', (gid, b64msg))
         greetMsgDict[gid] = msg
