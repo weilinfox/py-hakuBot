@@ -197,8 +197,6 @@ def handle_group_upload_pastebin(fileType, fileName, fileLink, gid):
     :param fileLink: 文件链接
     :return: 返回 pastebin 链接
     """
-    if notice_check_block(gid, 'pastebin'):
-        return ''
     if not fileType in textFiles.keys():
         return ''
     try:
@@ -311,7 +309,8 @@ def new_event(msgDict):
         myLogger.info(f'收到新的好友添加请求，来自id: {msgDict["user_id"]}')
         hakuCore.report.report(f'收到新的好友添加请求，来自id: {msgDict["user_id"]}')
     elif msgDict['notice_type'] == 'group_upload':
-        if gid == -1: return
+        if gid == -1 or notice_check_block(gid, 'pastebin'):
+            return
         msg = handle_group_upload(msgDict)
         hakuCore.cqhttpApi.send_group_msg(gid, msg)
     elif msgDict['notice_type'] == 'offline_file':
