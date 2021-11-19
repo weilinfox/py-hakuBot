@@ -8,6 +8,7 @@
 """
 
 import requests
+import time
 import hakuData.method
 
 configDict = hakuData.method.get_config_dict()
@@ -20,8 +21,9 @@ PATH = hakuData.method.get_main_path()
 
 def main(msgDict):
     resp = requests.get(url=f'http://127.0.0.1:{PORT}/VERSION', params={}, timeout=5)
+    utime = time.asctime(time.gmtime(hakuData.method.get_update_time() + 8 * 3600))
     if resp.status_code == 200:
         hakuBotVer = resp.text
     else:
         hakuBotVer = '获取版本号失败'
-    return f'小白哦~\n{hakuBotVer}'
+    return f'小白哦~\n{hakuBotVer}\n最后更新: {utime}'

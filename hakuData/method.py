@@ -14,6 +14,7 @@ import json
 import csv
 import sqlite3
 import logging
+import time
 import hakuData.log
 
 # 路径检测和初始化
@@ -29,6 +30,7 @@ jsonFiles = set()
 configFile = dataPath + '/config.json'
 keysFile = dataPath + '/keys.json'
 logPath = dataPath + '/log'
+updatetime = time.time()
 
 if not os.path.exists(dataPath):
     print('mkdir {}'.format(dataPath))
@@ -102,6 +104,10 @@ def build_logger():
     """
     global myLogger
     myLogger = logging.getLogger('hakuBot')
+
+
+def get_update_time():
+    return updatetime
 
 
 def get_filenames():

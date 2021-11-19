@@ -144,7 +144,7 @@ hakuBot 具有一个代码更新插件 ``plugins/message/update.py`` ，可以�
 python3 operate.py UPDATE
 ```
 
-由于代码更新并不能更新主程序 ``main.py`` 的代码， flask 部分通常并不会被错误的更新损坏；由于触发 ``git pull`` 停止的事件为返回 “Already up to date.”，如果你的环境与此不同，请自行更改判断条件。
+由于代码更新并不能更新主程序 ``main.py`` 的代码， flask 部分通常并不会被错误的更新损坏。
 
 ## 细节
 
