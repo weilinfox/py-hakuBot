@@ -107,6 +107,10 @@ def build_logger():
 
 
 def get_update_time():
+    """
+    获取模块最后载入时间
+    :return: 最后载入时间 double
+    """
     return updatetime
 
 
