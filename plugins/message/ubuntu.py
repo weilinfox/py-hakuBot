@@ -2,15 +2,15 @@
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
 """
-Debian 包查询
+Ubuntu 包查询
 """
 
 import requests
 import re
 
 
-def search_debian(keywords):
-    baseurl = 'https://packages.debian.org'
+def search_ubuntu(keywords):
+    baseurl = 'https://packages.ubuntu.com'
     searchurl = '/search'
     params = {
         'suite': 'all',
@@ -54,6 +54,9 @@ def search_debian(keywords):
                     dis = href.split('">', 1)
                     href = dis[0].strip()
                     dis = dis[1].strip()
+                    inhtmls = re.findall(r'<.*?>', ver, flags=0)
+                    for s in inhtmls:
+                        ver = ver.replace(s, '')
                     searchRes['links'].append({
                         'distribution': dis,
                         'link': baseurl + href,
@@ -67,18 +70,18 @@ def search_debian(keywords):
         else:
             return 'No search result.'
     else:
-        return 'Debian server error.'
+        return 'Ubuntu server error.'
 
 
 def main(msgdict):
     req = list(msgdict['raw_message'].strip().split(' ', 1))
-    helpmsg = 'Debian 包查询'
+    helpmsg = 'Ubuntu 包查询'
     if len(req) > 1:
         keywords = req[1].strip()
-        return search_debian(keywords)
+        return search_ubuntu(keywords)
 
     return helpmsg
 
 
 if __name__ == '__main__':
-    print(search_debian('linux'))
+    print(search_ubuntu('linux'))
