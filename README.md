@@ -28,6 +28,7 @@ hakuBot，利用go-cqhttp在龙芯和其他平台快速构建的qq机器人。
 |:-------|:------------------:|
 | debian  |   Debian 包查询    |
 | ubuntu  |   Ubuntu 包查询    |
+| arch    |   Archlinux 包查询 |
 | mao     |   毛主席语录        |
 | marx    |   马克思主义        |
 | rss     |   自定义群 rss 推送  | 

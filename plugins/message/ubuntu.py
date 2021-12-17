@@ -57,6 +57,9 @@ def search_ubuntu(keywords):
                     inhtmls = re.findall(r'<.*?>', ver, flags=0)
                     for s in inhtmls:
                         ver = ver.replace(s, '')
+                    inhtmls = re.findall(r'<.*?>', des, flags=0)
+                    for s in inhtmls:
+                        des = des.replace(s, '')
                     searchRes['links'].append({
                         'distribution': dis,
                         'link': baseurl + href,
