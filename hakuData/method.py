@@ -377,6 +377,16 @@ def sqlite_get_name(module, name):
     return f"{module}.{name}.db"
 
 
+def sqlite_get_path(module, name):
+    """
+    获取默认sqlite文件路径
+    :param module: 模块名称
+    :param name: 自定义名称
+    :return: '/path/to/db/module.name.db'
+    """
+    return f'{sqlitePath}/{module}.{name}.db'
+
+
 def sqlite_db_open(name):
     """
     从 files/sqlite 目录打开sqlite数据库文件
