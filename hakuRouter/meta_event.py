@@ -295,12 +295,13 @@ def new_event(msgDict):
     # 重复指令
     timeNow = time.time()
     msgEvent = meta_msg_event.copy()
-    if ADMINQQ > 99999:
-        msgEvent['user_id'] = ADMINQQ
-        msgEvent['message_type'] = 'private'
-    if ADMINGRP > 99999:
-        msgEvent['group_id'] = ADMINGRP
-        msgEvent['message_type'] = 'group'
+    # if ADMINQQ > 99999:
+    #     msgEvent['user_id'] = ADMINQQ
+    #     msgEvent['message_type'] = 'private'
+    # if ADMINGRP > 99999:
+    #     msgEvent['group_id'] = ADMINGRP
+    #     msgEvent['message_type'] = 'group'
+    msgEvent['message_type'] = ''
     for com in regularComDict.keys():
         if timeNow - regularComDict[com]['last_call'] >= regularComDict[com]['interval']:
             msgEvent['message'] = msgEvent['raw_message'] = regularComDict[com]['message']
