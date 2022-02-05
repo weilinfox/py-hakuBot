@@ -9,19 +9,19 @@
 
 import requests
 import time
-import hakuData.method
+import haku_data.method
 
-configDict = hakuData.method.get_config_dict()
+configDict = haku_data.method.get_config_dict()
 serverConfig = configDict.get('server_config', {})
 hakuConfig = configDict.get('haku_config', {})
 
 PORT = serverConfig.get('listen_port', 8000)
-PATH = hakuData.method.get_main_path()
+PATH = haku_data.method.get_main_path()
 
 
 def main(msgDict):
     resp = requests.get(url=f'http://127.0.0.1:{PORT}/VERSION', params={}, timeout=5)
-    utime = time.asctime(time.gmtime(hakuData.method.get_update_time() + 8 * 3600))
+    utime = time.asctime(time.gmtime(haku_data.method.get_update_time() + 8 * 3600))
     if resp.status_code == 200:
         hakuBotVer = resp.text
     else:

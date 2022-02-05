@@ -2,15 +2,15 @@
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
 import logging, time, threading
-import hakuData.status
-import hakuData.method
-import hakuCore.cqhttpApi
-import hakuCore.report
-import hakuCore.plugin
+import haku_data.status
+import haku_data.method
+import haku_core.api_cqhttp
+import haku_core.report
+import haku_core.plugin
 
 myLogger = logging.getLogger('hakuBot')
 
-configDict = hakuData.method.get_config_dict()
+configDict = haku_data.method.get_config_dict()
 serverConfig = configDict.get('server_config', {})
 hakuConfig = configDict.get('haku_config', {})
 INDEX = hakuConfig.get('index', '.')
@@ -34,7 +34,7 @@ errorCount = 0
 timeDelay = 0
 
 # 注册自己
-hakuData.status.regest_router('meta_event', {'event_frequency':0})
+haku_data.status.regest_router('meta_event', {'event_frequency':0})
 
 # 循环指令 {'command':{'message':'msg', 'interval':0, 'last_call':0}, ...}
 regularComLock = threading.Lock()
@@ -61,7 +61,7 @@ def load_regular_commands():
     global regularComDict
     myLogger.debug('Loading regular commands')
     with regularComLock:
-        rawDict = hakuData.method.csv_read_dict(regularComFile, ['command', 'interval'])
+        rawDict = haku_data.method.csv_read_dict(regularComFile, ['command', 'interval'])
     for i in range(0, len(rawDict)):
         try:
             rawDict[i]['interval'] = int(rawDict[i]['interval'])
@@ -81,7 +81,7 @@ def load_group_time_csv():
     global groupTimeDict
     myLogger.debug('Loading group time table...')
     with groupTimeLock:
-        rawData = hakuData.method.csv_read_dict(groupTimeFile, ['group_id', 'time', 'message'])
+        rawData = haku_data.method.csv_read_dict(groupTimeFile, ['group_id', 'time', 'message'])
         for dct in rawData:
             if dct['group_id'] in groupTimeDict:
                 if dct['time'] in groupTimeDict[dct['group_id']]['time']:
@@ -97,7 +97,7 @@ def load_group_date_csv():
     global groupDateDict
     myLogger.debug('Loading group schedual...')
     with groupDateLock:
-        rawData = hakuData.method.csv_read_dict(groupDateFile, ['group_id', 'date', 'message'])
+        rawData = haku_data.method.csv_read_dict(groupDateFile, ['group_id', 'date', 'message'])
         for dct in rawData:
             if dct['group_id'] in groupDateDict:
                 if dct['date'] in groupDateDict[dct['group_id']]['date']:
@@ -113,7 +113,7 @@ def load_user_time_csv():
     global userTimeDict
     myLogger.debug('Loading user time table...')
     with userTimeLock:
-        rawData = hakuData.method.csv_read_dict(userTimeFile, ['user_id', 'time', 'message'])
+        rawData = haku_data.method.csv_read_dict(userTimeFile, ['user_id', 'time', 'message'])
         for dct in rawData:
             if dct['user_id'] in userTimeDict:
                 if dct['time'] in userTimeDict[dct['user_id']]['time']:
@@ -129,7 +129,7 @@ def load_user_date_csv():
     global userDateDict
     myLogger.debug('Loading user schedual...')
     with userDateLock:
-        rawData = hakuData.method.csv_read_dict(userDateFile, ['user_id', 'date', 'message'])
+        rawData = haku_data.method.csv_read_dict(userDateFile, ['user_id', 'date', 'message'])
         for dct in rawData:
             if dct['user_id'] in userDateDict:
                 if dct['date'] in userDateDict[dct['user_id']]['date']:
@@ -158,9 +158,9 @@ def new_event(msgDict):
     if errorCount > 99:
         errorCount = 0
         myLogger.error('Error count exceeded.')
-        hakuCore.cqhttpApi.set_restart()
+        haku_core.cqhttpApi.set_restart()
         time.sleep(60)
-        hakuCore.report.report('Error count exceeded, go-cqhttp restarted.')
+        haku_core.report.report('Error count exceeded, go-cqhttp restarted.')
     # 获取heartbeat速率
     if msgDict['meta_event_type'] == 'heartbeat':
         tm = msgDict['time']
@@ -172,22 +172,22 @@ def new_event(msgDict):
         for t in delList:
             heartBeatCache.remove(t)
         heartBeatCacheLen -= len(delList)
-        hakuData.status.refresh_status('meta_event', {'heartbeat_frequency':heartBeatCacheLen})
+        haku_data.status.refresh_status('meta_event', {'heartbeat_frequency':heartBeatCacheLen})
 
     # 事件逻辑
     # 每十五分钟查询一次数据更新
     if timeNow - updateTime >= 60*15:
         updateTime = timeNow
         myLogger.debug('Ask whether need to update time table.')
-        if hakuData.method.csv_check_update(regularComFile):
+        if haku_data.method.csv_check_update(regularComFile):
             load_regular_commands()
-        if hakuData.method.csv_check_update(userTimeFile):
+        if haku_data.method.csv_check_update(userTimeFile):
             load_user_time_csv()
-        if hakuData.method.csv_check_update(groupTimeFile):
+        if haku_data.method.csv_check_update(groupTimeFile):
             load_group_time_csv()
-        if hakuData.method.csv_check_update(userDateFile):
+        if haku_data.method.csv_check_update(userDateFile):
             load_user_date_csv()
-        if hakuData.method.csv_check_update(groupDateFile):
+        if haku_data.method.csv_check_update(groupDateFile):
             load_group_date_csv()
 
     # 小时+8
@@ -271,10 +271,10 @@ def new_event(msgDict):
             # 发送
             for grp in groupTimes.keys():
                 for msg in groupTimes[grp]:
-                    hakuCore.cqhttpApi.send_group_msg(grp, msg)
+                    haku_core.cqhttpApi.send_group_msg(grp, msg)
             for usr in userTimes.keys():
                 for msg in userTimes[usr]:
-                    hakuCore.cqhttpApi.send_private_msg(usr, msg)
+                    haku_core.cqhttpApi.send_private_msg(usr, msg)
             msgEvent = meta_msg_event.copy()
             msgEvent['message_type'] = 'group'
             for grp in groupComs.keys():
@@ -282,7 +282,7 @@ def new_event(msgDict):
                 for msg in groupComs[grp]:
                     msgEvent['message'] = msgEvent['raw_message'] = msg
                     modName = list(msg[1:].split())[0]
-                    hakuCore.plugin.run_module(msgEvent, 'message', modName)
+                    haku_core.plugin.run_module(msgEvent, 'message', modName)
             msgEvent['message_type'] = 'private'
             msgEvent['group_id'] = -1
             for usr in userComs.keys():
@@ -290,7 +290,7 @@ def new_event(msgDict):
                 for msg in userComs[usr]:
                     msgEvent['message'] = msgEvent['raw_message'] = msg
                     modName = list(msg[1:].split())[0]
-                    hakuCore.plugin.run_module(msgEvent, 'message', modName)
+                    haku_core.plugin.run_module(msgEvent, 'message', modName)
 
     # 重复指令
     timeNow = time.time()
@@ -306,7 +306,7 @@ def new_event(msgDict):
         if timeNow - regularComDict[com]['last_call'] >= regularComDict[com]['interval']:
             msgEvent['message'] = msgEvent['raw_message'] = regularComDict[com]['message']
             regularComDict[com]['last_call'] = timeNow
-            hakuCore.plugin.run_module(msgEvent, 'message', com[1:])
+            haku_core.plugin.run_module(msgEvent, 'message', com[1:])
 
 # 数据初始化
 load_regular_commands()

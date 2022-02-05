@@ -4,14 +4,14 @@
 import subprocess
 import requests
 import time
-import hakuData.method
+import haku_data.method
 
-configDict = hakuData.method.get_config_dict()
+configDict = haku_data.method.get_config_dict()
 serverConfig = configDict.get('server_config', {})
 hakuConfig = configDict.get('haku_config', {})
 
 PORT = serverConfig.get('listen_port', 8000)
-PATH = hakuData.method.get_main_path()
+PATH = haku_data.method.get_main_path()
 onupdate = False
 
 

@@ -15,18 +15,18 @@ def new_event(msgDict):
         myLogger.warning(f'Catch inlegal event: {msgDict}')
         return
     myLogger.debug(f'Catch new event, message type: {msgType}')
-    mdl = 'hakuRouter.{}'.format(msgType)
+    mdl = 'haku_router.{}'.format(msgType)
     imp = pluginModules.get(mdl, None)
     if imp is None:
         try:
-            imp = importlib.import_module('hakuRouter.{}'.format(msgType))
+            imp = importlib.import_module('haku_router.{}'.format(msgType))
             myLogger.debug(f'Load new router: {msgType}')
         except ModuleNotFoundError:
             myLogger.warning('No such router: {}'.format(msgDict['post_type']))
         except:
             myLogger.exception('RuntimeError')
         else:
-            pluginModules['hakuRouter.{}'.format(msgType)] = imp
+            pluginModules['haku_router.{}'.format(msgType)] = imp
     else:
         myLogger.debug(f'Reuse router: {msgType}')
     if imp:

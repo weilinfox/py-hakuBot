@@ -14,13 +14,13 @@ import os
 import traceback
 import random
 import logging.config
-import hakuData.log as hakuLog
-import hakuData.method as dataMethod
-import hakuData.status as hakuStatus
-import hakuCore.hakuMind as callHaku
-import hakuCore.cqhttpApi as hakuApi
-import hakuCore.plugin as hakuPlg
-import hakuCore.report
+import haku_data.log as haku_log
+import haku_data.method as data_method
+import haku_data.status as haku_status
+import haku_core.haku_mind as call_haku
+import haku_core.api_cqhttp as cqhttp_api
+import haku_core.plugin as haku_plugin
+import haku_core.report
 
 if os.name == 'posix':
     import signal
@@ -29,11 +29,11 @@ if os.name == 'posix':
 VERSION = 'py-hakuBot v0.0.5'
 
 # 模块记录 用于reload
-modules = ('hakuLog', 'hakuStatus', 'dataMethod', 'callHaku', 'hakuApi', 'hakuPlg', 'hakuCore.report')
+modules = ('haku_log', 'haku_status', 'data_method', 'call_haku', 'cqhttp_api', 'haku_plugin', 'haku_core.report')
 pluginDict = dict()
 
 # 读取配置
-configDict = dataMethod.get_config_dict()
+configDict = data_method.get_config_dict()
 serverConfig = configDict.get('server_config', {})
 hakuConfig = configDict.get('haku_config', {})
 
@@ -55,13 +55,13 @@ ADMINQID = hakuConfig.get('admin_qq', 0)
 ADMINGID = hakuConfig.get('admin_group', 0)
 
 # 初始化log
-hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
-hakuLog.init_flack_log_level(FLASKLOGLEVEL, FLASKCLOGLEVEL)
+haku_log.init_log_level(LOGLEVEL, CLOGLEVEL)
+haku_log.init_flack_log_level(FLASKLOGLEVEL, FLASKCLOGLEVEL)
 # 这里强制设置 由于一直无效
 FLASKLOGGER.setLevel(logging.WARNING)
-logging.config.dictConfig(hakuLog.logDict)
+logging.config.dictConfig(haku_log.get_log_dict())
 myLogger = logging.getLogger('hakuBot')
-dataMethod.build_logger()
+data_method.build_logger()
 myLogger.info('logger init finished.')
 
 # 线程控制
@@ -75,13 +75,13 @@ threadCount = 0
 hakupid = os.getpid()
 
 # 初始化hakuCore
-callHaku.link_modules(pluginDict)
-hakuApi.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
-hakuPlg.link_modules(pluginDict)
-hakuCore.report.init_report(ADMINQID, ADMINGID)
+call_haku.link_modules(pluginDict)
+cqhttp_api.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
+haku_plugin.link_modules(pluginDict)
+haku_core.report.init_report(ADMINQID, ADMINGID)
 
 startTime = time.time()
-hakuStatus.regest_router('__main__', {'start_time': startTime})
+haku_status.regest_router('__main__', {'start_time': startTime})
 
 
 def get_thread_id():
@@ -91,25 +91,25 @@ def get_thread_id():
     """
     global threadIdList
     while True:
-        newId = random.random()
-        threadIdList.append(newId)
-        if threadIdList.count(newId) > 1:
-            threadIdList.remove(newId)
+        nid = random.random()
+        threadIdList.append(nid)
+        if threadIdList.count(nid) > 1:
+            threadIdList.remove(nid)
             continue
-        return newId
+        return nid
 
 
-def save_thread_id(thrObj, nid):
+def save_thread_id(thread, nid):
     """
-    将 tread id 保存在 threadDict 中构成 id: thread object 键值对
-    :param thrObj: thread 对象
+    将 thread id 保存在 threadDict 中构成 id: thread object 键值对
+    :param thread: thread 对象
     :param nid: thread id
     :return: 无返回值
     """
     global threadIdList, threadDict, threadCount, threadLock
     if threadCount == 0:
         threadLock.acquire()
-    threadDict[nid] = thrObj
+    threadDict[nid] = thread
     threadCount += 1
 
 
@@ -133,11 +133,11 @@ def clear_thread_id():
     :return: 无返回值
     """
     global threadDict, threadIdList
-    popKeys = list()
+    popkeys = list()
     for nid in threadDict.keys():
         if not threadDict[nid].is_alive():
-            popKeys.append(nid)
-    for nid in popKeys:
+            popkeys.append(nid)
+    for nid in popkeys:
         del_thread_id(nid)
 
 
@@ -149,10 +149,10 @@ def haku_start():
     flaskApp.run(host=HOST, port=PORT, debug=FLASKDEBUG, threaded=THREAD, processes=PROCESS)
 
 
-def new_thread(msgDict, nid):
+def new_thread(msgdict, nid):
     """
     处理新消息请求
-    :param msgDict: cqhttp message dictionary
+    :param msgdict: cqhttp message dictionary
     :param nid: thread id
     :return: 无返回值
     """
@@ -165,7 +165,7 @@ def new_thread(msgDict, nid):
         return
     # 新事件 逻辑
     try:
-        retCode = callHaku.new_event(msgDict)
+        retcode = call_haku.new_event(msgdict)
     except:
         myLogger.exception('RuntimeError')
     # 线程记录和锁
@@ -188,25 +188,25 @@ def update_thread():
         # update逻辑
         with threadLock:
             myLogger.debug('start update process')
-            errMsg1 = ''
-            errMsg2 = ''
-            errMsg3 = ''
+            errmsg1 = ''
+            errmsg2 = ''
+            errmsg3 = ''
             # 重载主要模块
             for md in modules:
                 try:
                     importlib.reload(eval(md))
                 except:
                     myLogger.exception('RuntimeError')
-                    errMsg1 = traceback.format_exc()
+                    errmsg1 = traceback.format_exc()
             # 重新初始化module
-            callHaku.link_modules(pluginDict)
-            hakuLog.init_log_level(LOGLEVEL, CLOGLEVEL)
-            hakuLog.init_flack_log_level(FLASKLOGLEVEL, FLASKCLOGLEVEL)
-            dataMethod.build_logger()
-            hakuApi.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
-            hakuPlg.link_modules(pluginDict)
-            hakuCore.report.init_report(ADMINQID, ADMINGID)
-            hakuStatus.regest_router('__main__', {'start_time': startTime})
+            call_haku.link_modules(pluginDict)
+            haku_log.init_log_level(LOGLEVEL, CLOGLEVEL)
+            haku_log.init_flack_log_level(FLASKLOGLEVEL, FLASKCLOGLEVEL)
+            data_method.build_logger()
+            cqhttp_api.init_api_url(POSTPROTOCOL, POSTURL, TOKEN)
+            haku_plugin.link_modules(pluginDict)
+            haku_core.report.init_report(ADMINQID, ADMINGID)
+            haku_status.regest_router('__main__', {'start_time': startTime})
             # 重载插件
             delPlugin = list()
             for md in pluginDict.keys():
@@ -217,7 +217,7 @@ def update_thread():
                         pluginDict[md].quit_plugin()
                     except:
                         myLogger.exception('RuntimeError')
-                        errMsg2 = traceback.format_exc()
+                        errmsg2 = traceback.format_exc()
                 try:
                     myLogger.debug(f'Reload {md}')
                     pluginDict[md] = importlib.reload(pluginDict[md])
@@ -226,17 +226,17 @@ def update_thread():
                     delPlugin.append(md)
                 except:
                     myLogger.exception('RuntimeError')
-                    errMsg3 = traceback.format_exc()
+                    errmsg3 = traceback.format_exc()
             # 错误上报
-            if errMsg1:
-                hakuCore.report.report('Error occored while reloading module:')
-                hakuCore.report.report(errMsg1)
-            if errMsg2:
-                hakuCore.report.report('Error occored while quit plugin:')
-                hakuCore.report.report(errMsg2)
-            if errMsg3:
-                hakuCore.report.report('Error occored while reloading plugin:')
-                hakuCore.report.report(errMsg3)
+            if errmsg1:
+                haku_core.report.report('Error occored while reloading module:')
+                haku_core.report.report(errmsg1)
+            if errmsg2:
+                haku_core.report.report('Error occored while quit plugin:')
+                haku_core.report.report(errmsg2)
+            if errmsg3:
+                haku_core.report.report('Error occored while reloading plugin:')
+                haku_core.report.report(errmsg3)
             # 删除不存在的plugin
             for md in delPlugin:
                 pluginDict.pop(md)
@@ -281,7 +281,7 @@ def terminate_thread():
 
 # 事件触发
 @flaskApp.route('/', methods=['POST'])
-def newMsg():
+def new_message():
     """
     新 cqhttp 消息
     :return: 空字符串
@@ -301,7 +301,7 @@ def newMsg():
 
 # update触发
 @flaskApp.route('/UPDATE', methods=['POST', 'GET'])
-def updateMsg():
+def update_message():
     """
     新 update 请求
     :return: 空字符串
@@ -312,7 +312,7 @@ def updateMsg():
 
 
 @flaskApp.route('/VERSION', methods=['POST', 'GET'])
-def versionMsg():
+def version_message():
     """
     获取 main.py 版本
     :return: 格式化后的版本号字串
@@ -321,7 +321,7 @@ def versionMsg():
 
 
 @flaskApp.route('/THREADS', methods=['POST', 'GET'])
-def threadMsg():
+def thread_message():
     """
     获取当前子线程状态
     :return: 格式化后的子线程状态字串
@@ -338,14 +338,14 @@ def threadMsg():
 
 
 @flaskApp.route('/STATUS', methods=['GET'])
-def statusMsg():
+def status_message():
     """
-    从 hakuData/status.py 读取状态
+    从 haku_data/status.py 读取状态
     :return: 格式化后的状态字串
     """
     nm = flask.request.args.get('name', '')
     if nm:
-        dct, tm = hakuStatus.get_status(nm)
+        dct, tm = haku_status.get_status(nm)
         return json.dumps({'message': dct, 'time': tm})
     else:
         return json.dumps({'message': 'invalid args', 'time': int(time.time())})

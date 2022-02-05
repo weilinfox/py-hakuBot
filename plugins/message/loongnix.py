@@ -15,7 +15,7 @@ import sqlite3
 import threading
 import re
 import logging
-import hakuData.method as method
+import haku_data.method as method
 
 myLogger = logging.getLogger('hakuBot')
 dbpath = method.sqlite_get_path('message', 'loongnix')

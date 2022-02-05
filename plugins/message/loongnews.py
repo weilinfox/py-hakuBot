@@ -5,8 +5,8 @@ import requests
 import time
 import re
 import logging
-import hakuData.method as method
-import hakuCore.cqhttpApi as api
+import haku_data.method as method
+import haku_core.api_cqhttp as api
 
 """
 龙芯开源社区新闻订阅

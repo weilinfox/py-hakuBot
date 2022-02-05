@@ -1,7 +1,7 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import hakuData.status
+import haku_data.status
 import time
 
 def main(msgDict):
@@ -9,7 +9,7 @@ def main(msgDict):
     timeNow = time.time()
     if len(msgList) < 2:
         ans = 'Read haku-manager data.'
-        statusDict, refreshTime = hakuData.status.get_status('haku-manager')
+        statusDict, refreshTime = haku_data.status.get_status('haku-manager')
         if statusDict:
             ans += '\n在线列表如下:'
             print(statusDict)
@@ -22,7 +22,7 @@ def main(msgDict):
             ans += '\n没有查询到 haku-manager 的信息'
     else:
         serverName = msgList[1]
-        statusDict, refreshTime = hakuData.status.get_status('haku-manager')
+        statusDict, refreshTime = haku_data.status.get_status('haku-manager')
         if statusDict:
             if (serverName in statusDict['status']) and statusDict['status'][serverName]['status']:
                 myDict = statusDict['status'][serverName].copy()

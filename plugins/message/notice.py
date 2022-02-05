@@ -6,10 +6,10 @@ notice 配置
 设置 入群欢迎 notice 功能 pastebin 上传 打开与关闭
 """
 
-import hakuRouter.notice as notice
-import hakuData.method
+import haku_router.notice as notice
+import haku_data.method
 
-configDict = hakuData.method.get_config_dict()
+configDict = haku_data.method.get_config_dict()
 serverConfig = configDict.get('server_config', {})
 hakuConfig = configDict.get('haku_config', {})
 

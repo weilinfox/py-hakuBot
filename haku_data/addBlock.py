@@ -7,6 +7,7 @@ myLogger = logging.getLogger('hakuBot')
 
 blockSet = {'采购补贴', '充值返券', '抢先购', '会员专享'}
 
+
 def has_block_word(text) -> bool:
     for w in blockSet:
         if w in text:

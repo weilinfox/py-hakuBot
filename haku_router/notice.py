@@ -21,11 +21,11 @@ import logging
 import sqlite3
 import base64
 import requests
-import hakuCore.cqhttpApi
-import hakuData.method
-import hakuCore.report
+import haku_core.api_cqhttp
+import haku_data.method
+import haku_core.report
 
-configDict = hakuData.method.get_config_dict()
+configDict = haku_data.method.get_config_dict()
 serverConfig = configDict.get('server_config', {})
 hakuConfig = configDict.get('haku_config', {})
 
@@ -58,7 +58,7 @@ def notice_init_data():
     """
     global greetMsgDict, blockGidDict
 
-    conn = hakuData.method.sqlite_default_db_open('notice', 'notice')
+    conn = haku_data.method.sqlite_default_db_open('notice', 'notice')
     cur = conn.cursor()
     cur.execute('CREATE TABLE IF NOT EXISTS greetmsg(gid BIGINT, greetmsg VARCHAR(2048));')
     cur.execute('CREATE TABLE IF NOT EXISTS blockgid(gid BIGINT, greet BYTE, notice BYTE, pastebin BYTE);')
@@ -75,7 +75,7 @@ def notice_init_data():
             blockGidDict['notice'].add(d[0])
         if d[3]:
             blockGidDict['pastebin'].add(d[0])
-    hakuData.method.sqlite_db_close(conn)
+    haku_data.method.sqlite_db_close(conn)
 
 
 notice_init_data()
@@ -124,7 +124,7 @@ def notice_update_block(gid, ukey, uflag):
     else:
         flagdata = 0
     try:
-        conn = hakuData.method.sqlite_default_db_open('notice', 'notice')
+        conn = haku_data.method.sqlite_default_db_open('notice', 'notice')
         cur = conn.cursor()
         if cur.execute(f'SELECT * FROM blockgid WHERE gid={gid}').fetchall():
             cur.execute(f'UPDATE blockgid SET {ukey}={flagdata} WHERE gid={gid}')
@@ -135,7 +135,7 @@ def notice_update_block(gid, ukey, uflag):
         else:
             if gid in blockGidDict[ukey]:
                 blockGidDict[ukey].remove(gid)
-        hakuData.method.sqlite_db_close(conn)
+        haku_data.method.sqlite_db_close(conn)
     except Exception as e:
         myLogger.exception(e)
         return False
@@ -160,14 +160,14 @@ def notice_update_greetmsg(gid, msg):
         return False
 
     try:
-        conn = hakuData.method.sqlite_default_db_open('notice', 'notice')
+        conn = haku_data.method.sqlite_default_db_open('notice', 'notice')
         cur = conn.cursor()
         if gid in greetMsgDict:
             cur.execute(f'UPDATE greetmsg SET greetmsg="{b64msg}" WHERE gid=?', (gid, ))
         else:
             cur.execute(f'INSERT INTO greetmsg (gid, greetmsg) VALUES (?,?)', (gid, b64msg))
         greetMsgDict[gid] = msg
-        hakuData.method.sqlite_db_close(conn)
+        haku_data.method.sqlite_db_close(conn)
     except Exception as e:
         myLogger.exception(e)
         return False
@@ -300,19 +300,19 @@ def new_event(msgDict):
         if gid == -1: return
         if not notice_check_block(gid, 'greet'):
             msg = handle_group_increase(msgDict)
-            hakuCore.cqhttpApi.send_group_msg(gid, msg)
+            haku_core.cqhttpApi.send_group_msg(gid, msg)
     elif msgDict['notice_type'] == 'notify' and msgDict['sub_type'] == 'lucky_king':
         if gid == -1: return
         msg = handle_lucky_king(msgDict)
-        hakuCore.cqhttpApi.send_group_msg(gid, msg)
+        haku_core.cqhttpApi.send_group_msg(gid, msg)
     elif msgDict['notice_type'] == 'friend_add':
         myLogger.info(f'收到新的好友添加请求，来自id: {msgDict["user_id"]}')
-        hakuCore.report.report(f'收到新的好友添加请求，来自id: {msgDict["user_id"]}')
+        haku_core.report.report(f'收到新的好友添加请求，来自id: {msgDict["user_id"]}')
     elif msgDict['notice_type'] == 'group_upload':
         if gid == -1 or notice_check_block(gid, 'pastebin'):
             return
         msg = handle_group_upload(msgDict)
-        hakuCore.cqhttpApi.send_group_msg(gid, msg)
+        haku_core.cqhttpApi.send_group_msg(gid, msg)
     elif msgDict['notice_type'] == 'offline_file':
         msg = handle_offline_file(msgDict)
-        hakuCore.cqhttpApi.send_private_msg(msgDict['user_id'], msg)
+        haku_core.cqhttpApi.send_private_msg(msgDict['user_id'], msg)

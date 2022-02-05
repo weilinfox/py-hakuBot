@@ -2,7 +2,7 @@
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
 import threading
-import hakuData.method
+import haku_data.method
 
 userTimeFile = 'meta_event.user_time_table.csv'
 userDateFile = 'meta_event.user_schedual.csv'
@@ -23,22 +23,22 @@ groupTimeDictDel = False
 groupScheDictDel = False
 restoreLock = threading.Lock()
 
-for dct in hakuData.method.csv_read_dict(userTimeFile, ['user_id', 'time', 'message']):
+for dct in haku_data.method.csv_read_dict(userTimeFile, ['user_id', 'time', 'message']):
     if dct['user_id'] in userTimeDict:
         userTimeDict[dct['user_id']].append({'time':dct['time'], 'message':dct['message']})
     else:
         userTimeDict[dct['user_id']] = [{'time':dct['time'], 'message':dct['message']}]
-for dct in hakuData.method.csv_read_dict(groupTimeFile, ['group_id', 'time', 'message']):
+for dct in haku_data.method.csv_read_dict(groupTimeFile, ['group_id', 'time', 'message']):
     if dct['group_id'] in groupTimeDict:
         groupTimeDict[dct['group_id']].append({'time':dct['time'], 'message':dct['message']})
     else:
         groupTimeDict[dct['group_id']] = [{'time':dct['time'], 'message':dct['message']}]
-for dct in hakuData.method.csv_read_dict(userDateFile, ['user_id', 'date', 'message']):
+for dct in haku_data.method.csv_read_dict(userDateFile, ['user_id', 'date', 'message']):
     if dct['user_id'] in userScheDict:
         userScheDict[dct['user_id']].append({'date':dct['date'], 'message':dct['message']})
     else:
         userScheDict[dct['user_id']] = [{'date':dct['date'], 'message':dct['message']}]
-for dct in hakuData.method.csv_read_dict(groupDateFile, ['group_id', 'date', 'message']):
+for dct in haku_data.method.csv_read_dict(groupDateFile, ['group_id', 'date', 'message']):
     if dct['group_id'] in groupScheDict:
         groupScheDict[dct['group_id']].append({'date':dct['date'], 'message':dct['message']})
     else:

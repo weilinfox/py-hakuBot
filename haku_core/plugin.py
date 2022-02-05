@@ -5,8 +5,8 @@ import os
 import json
 import logging
 import importlib
-import hakuCore.cqhttpApi as hakuApi
-import hakuData.method
+import haku_core.api_cqhttp as hakuApi
+import haku_data.method
 
 pluginModules = dict()
 myLogger = logging.getLogger('hakuBot')
@@ -16,10 +16,10 @@ myLogger = logging.getLogger('hakuBot')
 def check_plugin_auth(msgDict, routerName, mdlName):
     allow = True
     plgName = f'plugins.{routerName}.{mdlName}'
-    if not os.path.exists(hakuData.method.get_plugin_path(routerName, mdlName)):
+    if not os.path.exists(haku_data.method.get_plugin_path(routerName, mdlName)):
         myLogger.warning(f'No such plugin: {plgName}')
         return False, True
-    plgConf = hakuData.method.get_plugin_config_json(plgName)
+    plgConf = haku_data.method.get_plugin_config_json(plgName)
     if not os.path.exists(plgConf):
         myLogger.error(f'Plugin configure file: {plgConf} not found.')
         return False, True

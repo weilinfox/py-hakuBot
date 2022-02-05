@@ -1,7 +1,7 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import hakuData.method
+import haku_data.method
 import logging
 import requests, json
 
@@ -9,7 +9,7 @@ import requests, json
 #requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = "TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256:TLS13-AES-256-GCM-SHA384:ECDHE:!COMPLEMENTOFDEFAULT"
 
 myLogger = logging.getLogger('hakuBot')
-GLOTKEY = hakuData.method.search_keys_dict('glot_key')
+GLOTKEY = haku_data.method.search_keys_dict('glot_key')
 
 def glotLang():
     # to fix SSL Certificate Error

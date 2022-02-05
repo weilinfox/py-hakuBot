@@ -5,7 +5,7 @@
 """
 
 import random
-import hakuData.method as method
+import haku_data.method as method
 
 
 configDict = method.get_config_dict()

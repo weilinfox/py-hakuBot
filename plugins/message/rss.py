@@ -11,9 +11,9 @@ import requests
 import feedparser
 import re
 import threading
-import hakuCore.cqhttpApi as hakuApi
-import hakuData.method as hakuMethod
-import hakuData.addBlock as hakuBlock
+import haku_core.api_cqhttp as hakuApi
+import haku_data.method as hakuMethod
+import haku_data.addBlock as hakuBlock
 
 groupData = hakuMethod.csv_read_dict(
     hakuMethod.csv_get_name("rss", "group_rss"), ["id", "link"]

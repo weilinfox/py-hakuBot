@@ -3,7 +3,7 @@
 
 import requests
 import json, logging
-import hakuCore.cqhttpApi as hakuApi
+import haku_core.api_cqhttp as hakuApi
 
 #HOST = 'inuyasha.love'
 #PORT = 8001

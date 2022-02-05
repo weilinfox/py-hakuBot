@@ -2,12 +2,12 @@
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
 import json, logging, threading, importlib
-import hakuData.method
-import hakuData.status
-import hakuCore.cqhttpApi as hakuApi
-import hakuCore.plugin as hakuPlg
+import haku_data.method
+import haku_data.status
+import haku_core.api_cqhttp as hakuApi
+import haku_core.plugin as hakuPlg
 
-configDict = hakuData.method.get_config_dict()
+configDict = haku_data.method.get_config_dict()
 serverConfig = configDict.get('server_config', {})
 hakuConfig = configDict.get('haku_config', {})
 
@@ -25,12 +25,17 @@ msgTimeCacheLen = 0
 msgTimeCacheLock = threading.Lock()
 
 # 注册status
-hakuData.status.regest_router('message', {'message_frequency':0})
+haku_data.status.regest_router('message', {'message_frequency':0})
 
-def check_msg_cache(msgDict):
+
+def check_msg_cache(msgdict):
+    """
+    消息缓存
+    :param msgdict: 消息字典
+    """
     global groupMsgCache, groupMsgCacheLock, msgTimeCache, msgTimeCacheLen
     with msgTimeCacheLock:
-        tm = msgDict['time']
+        tm = msgdict['time']
         delList = []
         msgTimeCache.append(tm)
         msgTimeCacheLen += 1
@@ -39,20 +44,20 @@ def check_msg_cache(msgDict):
         for t in delList:
             msgTimeCache.remove(t)
         msgTimeCacheLen -= len(delList)
-        hakuData.status.refresh_status('message', {'message_frequency':msgTimeCacheLen})
-    if msgDict['message_type'] != 'group': return
-    gid = msgDict['group_id']
+        haku_data.status.refresh_status('message', {'message_frequency':msgTimeCacheLen})
+    if msgdict['message_type'] != 'group': return
+    gid = msgdict['group_id']
     myLogger.debug('Insert message to group message cache.')
     canRepeat = True
     with groupMsgCacheLock:
         # 新消息插入和复读
-        repeatMsg, repeatQid, repeatNow = msgDict['message'], msgDict['user_id'], msgDict['time']
+        repeatMsg, repeatQid, repeatNow = msgdict['message'], msgdict['user_id'], msgdict['time']
         if not (gid in groupMsgCache):
             groupMsgCache[gid] = {'pos':-1, 'msgCount':0, 'msgDicts':[{'msgDict':{}, 'repeated':False} for i in range(16)]}
             canRepeat = False
         posNow = (groupMsgCache[gid]['pos'] + 1) % 16
         posPast = (posNow + 15) % 16
-        groupMsgCache[gid]['msgDicts'][posNow]['msgDict'] = msgDict
+        groupMsgCache[gid]['msgDicts'][posNow]['msgDict'] = msgdict
         groupMsgCache[gid]['msgDicts'][posNow]['repeated'] = False
         groupMsgCache[gid]['pos'] = posNow
         groupMsgCache[gid]['msgCount'] += 1
@@ -69,15 +74,20 @@ def check_msg_cache(msgDict):
         if repeatMsg in ['[视频]你的QQ暂不支持查看视频短片，请升级到最新版本后查看。']: canRepeat = False
         if canRepeat: groupMsgCache[gid]['msgDicts'][posNow]['repeated'] = True
     if canRepeat and (len(repeatMsg) == 1 or repeatMsg[0] != INDEX):
-        hakuApi.reply_msg(msgDict, repeatMsg)
+        hakuApi.reply_msg(msgdict, repeatMsg)
 
-def new_event(msgDict):
-    check_msg_cache(msgDict)
-    myLogger.info(f'Current message frequency: {msgTimeCacheLen}/min\nGet message: {msgDict}')
-    modName = ''
-    if msgDict['message'][0] == INDEX:
-        # modName = list(msgDict['message'][1:].split())[0]
-        modName = list(msgDict['message'].split())[0][1:]
-    if modName:
-        myLogger.debug(f'Cache plugin: {msgDict["message"][1:]}')
-        hakuPlg.run_module(msgDict, 'message', modName)
+
+def new_event(msgdict):
+    """
+    新事件
+    :param msgdict: 消息字典
+    """
+    check_msg_cache(msgdict)
+    myLogger.info(f'Current message frequency: {msgTimeCacheLen}/min\nGet message: {msgdict}')
+    modname = ''
+    if msgdict['message'][0] == INDEX:
+        # modname = list(msgDict['message'][1:].split())[0]
+        modname = list(msgdict['message'].split())[0][1:]
+    if modname:
+        myLogger.debug(f'Cache plugin: {msgdict["message"][1:]}')
+        hakuPlg.run_module(msgdict, 'message', modname)

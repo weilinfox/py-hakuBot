@@ -1,13 +1,13 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import hakuData.status
+import haku_data.status
 import time
 
 def main(msgDict):
-    msgDct, msgTm = hakuData.status.get_status('message')
-    metaDct, metaTm = hakuData.status.get_status('meta_event')
-    mainDct, mainTm = hakuData.status.get_status('__main__')
+    msgDct, msgTm = haku_data.status.get_status('message')
+    metaDct, metaTm = haku_data.status.get_status('meta_event')
+    mainDct, mainTm = haku_data.status.get_status('__main__')
     run_time = int(time.time()-mainDct['start_time'])
     ans = f'Current time: {time.asctime(time.gmtime(time.time() + 8 * 3600))}'
     ans += f'\n\nUp time: {run_time//86400} days {(run_time%86400)//3600}:{(run_time%3600)//60}:{run_time%60}'

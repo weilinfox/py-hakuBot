@@ -8,12 +8,12 @@ weather 城市/地区
 weather 城市 地区
 """
 
-import hakuData.method
+import haku_data.method
 import requests
 import json
 
 
-HEKEY = hakuData.method.search_keys_dict('heweather')
+HEKEY = haku_data.method.search_keys_dict('heweather')
 params = {'key': HEKEY}
 url1 = 'https://geoapi.heweather.net/v2/city/lookup'
 url2 = 'https://devapi.heweather.net/v7/weather/now'

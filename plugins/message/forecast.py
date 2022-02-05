@@ -1,13 +1,13 @@
 # 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 您可以在下面的链接找到该许可证.
 # https://github.com/weilinfox/py-hakuBot/blob/main/LICENSE
 
-import hakuData.method
+import haku_data.method
 import logging
 import requests
 import json
 
 myLogger = logging.getLogger('hakuBot')
-HEKEY = hakuData.method.search_keys_dict('heweather')
+HEKEY = haku_data.method.search_keys_dict('heweather')
 
 def main (msgDict):
     KEY = HEKEY #和风天气key

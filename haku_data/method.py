@@ -15,7 +15,7 @@ import csv
 import sqlite3
 import logging
 import time
-import hakuData.log
+import haku_data.log
 
 # 路径检测和初始化
 mainPath = os.path.normpath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -93,7 +93,7 @@ kysFile.close()
 filenamesLock = threading.Lock()
 
 # logger
-hakuData.log.init_log_path(logPath)
+haku_data.log.init_log_path(logPath)
 myLogger = None
 
 
