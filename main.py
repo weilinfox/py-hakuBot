@@ -29,7 +29,7 @@ if os.name == 'posix':
 VERSION = 'py-hakuBot v0.0.5'
 
 # 模块记录 用于reload
-modules = ('haku_log', 'haku_status', 'data_method', 'call_haku', 'cqhttp_api', 'haku_plugin', 'haku_core.report')
+modules = (haku_log, haku_status, data_method, call_haku, cqhttp_api, haku_plugin, haku_core.report)
 pluginDict = dict()
 
 # 读取配置
@@ -194,7 +194,7 @@ def update_thread():
             # 重载主要模块
             for md in modules:
                 try:
-                    importlib.reload(eval(md))
+                    importlib.reload(md)
                 except:
                     myLogger.exception('RuntimeError')
                     errmsg1 = traceback.format_exc()
