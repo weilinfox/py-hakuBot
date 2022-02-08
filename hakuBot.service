@@ -6,6 +6,8 @@ After=network.target
 Type=simple
 User=USER
 ExecStart=/PATH/TO/BOT/main.py
+Restart=on-success
+RestartSec=1s
 
 [Install]
 WantedBy=multi-user.target

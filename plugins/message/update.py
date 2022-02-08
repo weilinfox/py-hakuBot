@@ -15,7 +15,7 @@ PATH = haku_data.method.get_main_path()
 onupdate = False
 
 
-def main(msgDict):
+def main(msgdict):
     global onupdate
     if onupdate:
         return '已有更新任务正在执行'
@@ -32,7 +32,12 @@ def main(msgDict):
             time.sleep(5)
     durition = int(time.time() - durition)
     try:
-        rep = requests.get(url=f'http://127.0.0.1:{PORT}/UPDATE', params={}, timeout=20)
+        if len(msgdict['raw_message'].strip().split()) == 1:
+            # 模块重载
+            rep = requests.get(url=f'http://127.0.0.1:{PORT}/UPDATE', params={}, timeout=20)
+        else:
+            # 重启
+            rep = requests.get(url=f'http://127.0.0.1:{PORT}/STOP', params={}, timeout=20)
     except Exception as e:
         repmsg = f'UPDATE request failed:\n {e}'
     else:

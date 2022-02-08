@@ -342,6 +342,13 @@ def test_message_group_update():
     test_send(groupmsgdict)
 
 
+def test_message_group_update_restart():
+    global groupmsgdict
+    groupmsgdict['message'] = groupmsgdict['raw_message'] = '.update .'
+    test_send(groupmsgdict)
+    test_send(groupmsgdict)
+
+
 testfunctions = [test_message_group,
                  test_message_private,
                  test_message_group_ping,
@@ -380,7 +387,8 @@ testfunctions = [test_message_group,
                  test_message_private_notice_1,
                  test_message_private_notice_2,
                  test_message_private_notice_3,
-                 test_message_group_update
+                 test_message_group_update,
+                 # test_message_group_update_restart,
                  ]
 
 

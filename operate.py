@@ -15,21 +15,24 @@ Usage: operate [COMMAND]          Run hakuBot command
 
        COMMAND:
             VERSION     Get hakuBot version
-            UPDATE      Update hakuBot
+            UPDATE      Reload hakuBot modules
+            THREADS     Get thread count
+            STATUS      Get status data
+            STOP        Stop hakuBot
 ''')
         return 0
 
-    configFile = os.path.normpath(os.path.dirname(os.path.abspath(__file__))) + '/files/config.json'
-    print(f'Load config file: {configFile}')
+    config_file = os.path.normpath(os.path.dirname(os.path.abspath(__file__))) + '/files/config.json'
+    print(f'Load config file: {config_file}')
     port = 0
-    if os.path.exists(configFile):
-        with open(configFile, 'r') as conFile:
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as conFile:
             try:
-                configJson = json.loads(conFile.read()).get('server_config', {})
+                config_json = json.loads(conFile.read()).get('server_config', {})
             except:
                 print('Load hakuBot config file failed.')
             else:
-                port = configJson.get('listen_port', 0)
+                port = config_json.get('listen_port', 0)
         if not port:
             print('Get hakuBot listen port failed.')
             return 1

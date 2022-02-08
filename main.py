@@ -354,7 +354,7 @@ def status_message():
 @flaskApp.route('/STOP', methods=['GET'])
 def flask_terminate():
     """
-    停止 flask 服务器
+    停止 flask 服务器，如果使用 systemd 应配合相应的配置实现重启
     :return: 空字符串
     """
     thr = threading.Thread(target=terminate_thread, args=[], daemon=True)
