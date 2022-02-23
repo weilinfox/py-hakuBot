@@ -1,8 +1,10 @@
 # py-hakuBot
 
-- 小白不仅是机器人，也掌管了狸的大部分服务。 
+- 小白不仅是机器人，也掌管了狸的大部分服务。
 
 hakuBot，利用go-cqhttp在大部分平台快速构建的qq机器人。
+
+由于构架非常垃圾，已经不再更新，转而使用重构的 [haku-qqbot](https://github.com/weilinfox/haku-qqbot)
 
 可以基于go-cqhttp的http报文格式自主扩展，使hakuBot也可以响应其他自定义事件。通过两级插件方便扩展和删减插件：第一级为通过 ``post_type`` 判断插件类型，调用 ``hakuRouter`` 下的对应模块处理；第二级为第一级插件模块调用 ``plugins`` 下的对应包中的插件，包名即第一级插件的模块名。
 
